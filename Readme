@@ -8,4 +8,7 @@ Coding Conventions:
   use strict; !!
   Private Funktionen beginnen mit _
   Tabulatorweite: 2 , Spaces anstatt Tabs !!!
-  
+  Funktionen:
+  sub name{
+    $self = shift;
+  }

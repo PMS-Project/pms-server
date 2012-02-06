@@ -8,7 +8,14 @@ use AnyEvent::Handle;
 use AnyEvent::Socket;
 use Object::Event;
 
-
+our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
+                 , 'client_disconnected'    # Any client closed the connection
+                 , 'new_message'            # Any client sent a message to any channel
+                 , 'user_entered_channel'   # A connected user entered a channel
+                 , 'user_left_channel'      # A connected user left a channel
+                 , 'channel_created'        # A new channel was created on the server 
+                 , 'channel_closed');       # A channel was deleted/closed
+  
 sub new (){
   my $class = shift;
   my $self  = {};
@@ -25,6 +32,7 @@ sub new (){
   $self->{m_events}   = Object::Event->new();
   $self->{m_timers}   = ();
   $self->{m_clients}  = ();
+  $self->{m_modules}  = ();
 
   $self->{m_listeningSocket} = 	tcp_server(undef, 8888, $self->_newConnectionCallback());
 
@@ -33,11 +41,34 @@ sub new (){
 
 sub execute (){
   my $self = shift;
+   
+  $self->loadModules();
   $self->{m_eventLoop} ->recv; #eventloop
 }
 
 sub loadModules (){
-
+  my $self = shift;
+  
+  opendir (my $dir, 'modules') or die $!;
+  while( my $file = readdir($dir) ){
+    next if (!($file =~ m/.*\.pm$/));
+    print "Trying to load Module: ".$file,"\n";
+    
+    my $modname = "modules::".$file;
+    print $modname,"\n";
+    $modname =~ s{::}{/}g;
+    print $modname,"\n";
+    require $modname;
+    
+    my $name = "Backlog";
+    
+    my $module = $name->new($self);
+    $module->intialize();
+    
+    push(@{$self->{m_modules}},$module);
+    
+  }
+  closedir $dir;  
 }
 
 sub connectEvent (){
@@ -45,7 +76,7 @@ sub connectEvent (){
   return $self->{m_events}->reg_cb(@_);
 }
 
-sub disconnect (){
+sub disconnectEvent (){
   my $self = shift;
   my $guard = shift;
 
@@ -106,4 +137,5 @@ sub _newConnectionCallback(){
     $self->{m_clients}{$fh}->push_read(@start_request);
   }
 }
+
 1;
