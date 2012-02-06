@@ -3,3 +3,9 @@ Aus CPAN installieren:
 AnyEvent (6.14)
 Object::Event (1.23)
 Protocol::WebSocket (0.00906)
+
+Coding Conventions:
+  use strict; !!
+  Private Funktionen beginnen mit _
+  Tabulatorweite: 2 , Spaces anstatt Tabs !!!
+  

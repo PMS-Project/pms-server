@@ -4,8 +4,8 @@ use strict;
 use PmsApplication;
 
 sub main (){
-    my $app = PmsApplication->new();
-    $app->execute();
+  my $app = PmsApplication->new();
+  $app->execute();
 }
 
 main();
