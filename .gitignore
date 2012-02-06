@@ -1,1 +1,4 @@
-*.*~
+# Ignore swp files
+*~
+*.swp
+.*
