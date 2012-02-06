@@ -54,15 +54,14 @@ sub loadModules (){
     next if (!($file =~ m/.*\.pm$/));
     print "Trying to load Module: ".$file,"\n";
     
-    my $modname = "modules::".$file;
-    print $modname,"\n";
-    $modname =~ s{::}{/}g;
-    print $modname,"\n";
-    require $modname;
+    my $package = "modules::".$file;
+    $package =~ s{::}{/}g;
+    require $package;
     
-    my $name = "Backlog";
+    my $modname = $file;
+    $modname =~ s{.pm}{}g;
     
-    my $module = $name->new($self);
+    my $module = $modname->new($self);
     $module->intialize();
     
     push(@{$self->{m_modules}},$module);
