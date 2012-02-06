@@ -2,10 +2,11 @@
 
 package PmsApplication;
 
+use strict;
 use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket;
-use EventHandler;
+use Object::Event;
 
 
 sub new (){
@@ -19,10 +20,10 @@ sub new (){
 			      signal => "TERM", 
 			      cb => sub {
 				warn "Received TERM Signal\n";
-				$self{m_eventLoop}->send; #Exit from Eventloop
+				$PmsApplication::self{m_eventLoop}->send; #Exit from Eventloop
 			      });
   $self->{m_timers}   = ();
-  $self->{m_events}   = EventHandler->new();
+  $self->{m_events}   = Object::Event->new();
   $self->{m_clients}  = ();
   
   $self->{m_listeningSocket} = 	tcp_server(undef, 8888, $self->_createNewConnectionCallback());
@@ -49,8 +50,8 @@ sub connectEvent (){
 }
 
 sub disconnect (){
-  $self = shift;
-  $guard = shift;
+  my $self = shift;
+  my $guard = shift;
   
   $self->{m_events}->unreg_cb($guard);
 }
@@ -60,26 +61,10 @@ sub _createNewConnectionCallback(){
 
   return sub{
     my ($fh, $host, $port) = @_;
-  
-    if(defined $self->{m_eventLoop}){
-      warn "EventLoop is Defined";
-    }
-
-    if(defined $self->{m_signalHandler}){
-      warn "m_signalHandler is Defined";
-    }
-
-    if(defined $self->{m_listeningSocket}){
-      warn "m_listeningSocket is Defined";
-    }
 
     warn "Incoming Connection";
-    if(defined $self->{m_events}){
-      $self->{m_events}->event(client_connected);
-    }else{
-      warn "Object is nicht definiert";
-    }
-
+    $self->{m_events}->event('client_connected');
+   
     #TODO check host and port
     $self->{m_clients}{$fh} = new AnyEvent::Handle(
 			      fh     => $fh,
