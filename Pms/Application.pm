@@ -55,11 +55,9 @@ sub loadModules (){
     next if (!($file =~ m/.*\.pm$/));
     print "Trying to load Module: ".$file,"\n";
     
-    
     my $modname = "Pms/modules/".$file;
     my $basename = $file;
-    $basename =~ s{\.pm$}{}g;
-    
+    $basename =~ s{\.pm$}{}g;   
     require $modname;
     
     my $module = $basename->new($self);
