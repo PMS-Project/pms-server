@@ -1,12 +1,13 @@
 #!/usr/bin/perl -w
 
-package PmsApplication;
+package Pms::Application;
 
 use strict;
 use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket;
 use Object::Event;
+use Pms::Core::ConnectEvent;
 
 our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
                  , 'client_disconnected'    # Any client closed the connection
@@ -49,24 +50,20 @@ sub execute (){
 sub loadModules (){
   my $self = shift;
   
-  opendir (my $dir, 'modules') or die $!;
+  opendir (my $dir, 'Pms/modules') or die $!;
   while( my $file = readdir($dir) ){
     next if (!($file =~ m/.*\.pm$/));
     print "Trying to load Module: ".$file,"\n";
     
-    my $modname = "modules::".$file;
-    print $modname,"\n";
-    $modname =~ s{::}{/}g;
-    print $modname,"\n";
+    
+    my $modname = "Pms/modules/".$file;
+    my $basename = $file;
+    $basename =~ s{\.pm$}{}g;
+    
     require $modname;
     
-    my $name = "Backlog";
-    
-    my $module = $name->new($self);
-    $module->intialize();
-    
-    push(@{$self->{m_modules}},$module);
-    
+    my $module = $basename->new($self);
+    push(@{$self->{m_modules}},$module); 
   }
   closedir $dir;  
 }
@@ -98,7 +95,14 @@ sub _newConnectionCallback(){
     my ($fh, $host, $port) = @_;
 
     warn "Incoming Connection";
-    $self->{m_events}->event('client_connected');
+    my $event = Pms::Core::ConnectEvent->new();
+    $self->{m_events}->event('client_connected' => $event);
+    if($event->wasRejected()){
+      warn "Event was rejected, reason: ".$event->reason();
+      syswrite($fh,$event->reason());
+      close($fh);
+      return;
+    }
     
     #TODO check host and port
     $self->{m_clients}{$fh} = new AnyEvent::Handle(

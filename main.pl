@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
 use strict;
-use PmsApplication;
+use Pms::Application;
 
 sub main (){
-  my $app = PmsApplication->new();
+  my $app = Pms::Application->new();
   $app->execute();
 }
 
