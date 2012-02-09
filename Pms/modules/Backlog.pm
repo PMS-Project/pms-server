@@ -32,8 +32,8 @@ sub initialize (){
     my $eventType  = shift;
     warn "Hello from Module";
     
-    $eventType->reject("Connection Rejected because you suck\n");
-    $eventChain->stop_event;
+    #$eventType->reject("Connection Rejected because you suck\n");
+    #$eventChain->stop_event;
     
   }
   , client_connected=> sub 

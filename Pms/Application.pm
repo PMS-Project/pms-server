@@ -8,6 +8,7 @@ use AnyEvent::Handle;
 use AnyEvent::Socket;
 use Object::Event;
 use Pms::Core::ConnectEvent;
+use Pms::Prot::WebSock;
 
 our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
                  , 'client_disconnected'    # Any client closed the connection
@@ -102,6 +103,8 @@ sub _newConnectionCallback(){
       return;
     }
     
+    warn "Connection got through";
+    
     #TODO check host and port
     $self->{m_clients}{$fh} = new AnyEvent::Handle(
                               fh     => $fh,
@@ -114,7 +117,7 @@ sub _newConnectionCallback(){
                                 warn "Other Side disconnected.";
                               });
                     
-    my @start_request; @start_request = (line => sub {
+    my @start_request; @start_request = (websock => sub {
         my ($hdl, $line) = @_;
 
         warn "Something happend";
@@ -127,7 +130,7 @@ sub _newConnectionCallback(){
           warn "Key: ".$k;
           if($k ne $hdl->fh()){
               if(defined($self->{m_clients}{$k})){
-                  $self->{m_clients}{$k}->push_write($line);
+                  $self->{m_clients}{$k}->push_write('Pms::Prot::WebSock' => $line);
               }
           }
         }
