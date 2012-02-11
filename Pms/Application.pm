@@ -9,6 +9,7 @@ use AnyEvent::Socket;
 use Object::Event;
 use Pms::Event::Connect;
 use Pms::Prot::WebSock;
+use Pms::Prop::Parser;
 
 our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
                  , 'client_disconnected'    # Any client closed the connection
@@ -35,6 +36,8 @@ sub new (){
   $self->{m_timers}   = ();
   $self->{m_clients}  = ();
   $self->{m_modules}  = ();
+  $self->{m_commands} = ();
+  $self->{m_parser}   = Pms::Prot::Parser->new();
 
   $self->{m_listeningSocket} = 	tcp_server(undef, 8888, $self->_newConnectionCallback());
 
@@ -139,6 +142,18 @@ sub _newConnectionCallback(){
     }); 
     $self->{m_clients}{$fh}->push_read(@start_request);
   }
+}
+
+sub registerCommand (){
+  my $self = shift;
+  my $command = shift;
+  my $cb = shift;
+  
+  if(!exists ${$self->{m_commands}}{$command}){
+    ${$self->{m_commands}}{$command} = $cb;
+    return;
+  }
+  warn "Command ".$command." already exists, did not register it"; 
 }
 
 1;
