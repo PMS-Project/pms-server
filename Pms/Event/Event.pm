@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Pms::Core::Event;
+package Pms::Event::Event;
 use strict;
 
 sub new(){

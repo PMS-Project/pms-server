@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
-
-package Pms::Core::LeaveEvent;
+package Pms::Event::Join;
 
 use strict;
-use Pms::Core::Event;
-our @ISA = ("Pms::Core::Event");
+use Pms::Event::Event;
+
+our @ISA = ("Pms::Event::Event");
 
 sub new(){
   my $class = shift;

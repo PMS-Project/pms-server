@@ -7,7 +7,7 @@ use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket;
 use Object::Event;
-use Pms::Core::ConnectEvent;
+use Pms::Event::Connect;
 use Pms::Prot::WebSock;
 
 our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
@@ -94,7 +94,7 @@ sub _newConnectionCallback(){
     my ($fh, $host, $port) = @_;
 
     warn "Incoming Connection";
-    my $event = Pms::Core::ConnectEvent->new();
+    my $event = Pms::Event::Connect->new();
     $self->{m_events}->event('client_connected' => $event);
     if($event->wasRejected()){
       warn "Event was rejected, reason: ".$event->reason();
@@ -117,7 +117,7 @@ sub _newConnectionCallback(){
                                 warn "Other Side disconnected.";
                               });
                     
-    my @start_request; @start_request = (websock => sub {
+    my @start_request; @start_request = (websock_pms => sub {
         my ($hdl, $line) = @_;
 
         warn "Something happend";
@@ -128,10 +128,8 @@ sub _newConnectionCallback(){
         
         foreach my $k (keys %{$self->{m_clients}}){
           warn "Key: ".$k;
-          if($k ne $hdl->fh()){
-              if(defined($self->{m_clients}{$k})){
-                  $self->{m_clients}{$k}->push_write('Pms::Prot::WebSock' => $line);
-              }
+          if(defined($self->{m_clients}{$k})){
+              $self->{m_clients}{$k}->push_write(websock_pms => $line);
           }
         }
 

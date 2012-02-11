@@ -7,7 +7,7 @@ use Protocol::WebSocket::Handshake::Server;
 use Protocol::WebSocket::Frame;
 use AnyEvent::Handle;
 
-AnyEvent::Handle::register_read_type websock => sub{
+AnyEvent::Handle::register_read_type websock_pms => sub{
   my $hdl = shift;
   my $cb  = shift;
   
@@ -21,11 +21,6 @@ AnyEvent::Handle::register_read_type websock => sub{
     $hdl->{rbuf} = undef;
     my $hs    = $hdl->{pmsWebSockSrv};
     my $frame = $hdl->{pmsWebSockFrame};
-    
-    warn "Data:";
-    warn $chunk;
-
-    
     if(!defined $hs){
       $hdl->{pmsWebSockSrv} = $hs = Protocol::WebSocket::Handshake::Server->new();
       $hdl->{pmsWebSockFrame} = $frame = Protocol::WebSocket::Frame->new();
@@ -52,11 +47,11 @@ AnyEvent::Handle::register_read_type websock => sub{
   }
 };
 
-sub anyevent_write_type(){
+AnyEvent::Handle::register_write_type websock_pms => sub {
   warn "Writing Websocket";
   my $handle = shift;
   my $frame  = Protocol::WebSocket::Frame->new(shift);
   $handle->push_write($frame->to_bytes);
-}
+};
 
 1;
