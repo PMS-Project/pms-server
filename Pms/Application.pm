@@ -9,7 +9,7 @@ use AnyEvent::Socket;
 use Object::Event;
 use Pms::Event::Connect;
 use Pms::Prot::WebSock;
-use Pms::Prop::Parser;
+#use Pms::Prop::Parser;
 
 our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
                  , 'client_disconnected'    # Any client closed the connection

@@ -15,7 +15,8 @@ sub new{
 
 sub parseMessage (){
   my $self = shift;
-  my $message = shift;
+  my $string = shift;
+  my $message;
   
   #reverse string so we can always grab the last character
   $message = reverse $string;
@@ -34,22 +35,24 @@ sub parseMessage (){
   
   my @arguments;
   while(1){
-    #don't cut the first element out so the subparser can read it
     consumeWhitespace(\$message);
     if(!length($message)){
       last;
     }
+    
+    #print "remaining message: '".$message."'\n";
+    
+    #don't cut the first element out so the subparser can read it
     my $char = substr($message,length($message)-1,1);
+    #print "Next Char: '".$char."'\n";
     my $arg  = undef;
     if($char eq "\"" || $char eq "'"){
       $arg = $self->parseString(\$message);
-    }elsif($char =~ m/[0-9|+|-|\.]/){
+    }elsif($char =~ m/^[0-9|+|\-|\.]$/){ #a number can start with 0-9 + - or a . 
       $arg = $self->parseNumber(\$message);
-    }else{
-      $arg = $self->parseToken(\$message);
     }
     if(!defined $arg){
-      return 0;
+      return undef;
     }
     
     push(@arguments,$arg);
@@ -57,12 +60,15 @@ sub parseMessage (){
   
   my %funcCall = ('name' => $name,
                   'args' => @arguments);
+  
+  #print "\nParsed:\n ".%funcCall;
+  
   return %funcCall;
 }
 
 sub consumeWhitespace(){
   my $message = shift;
-  $$message =~ s/^\s+//; #remove leading spaces
+  $$message =~ s/\s+$//; #remove leading spaces
 }
 
 sub parseToken (){
@@ -71,20 +77,23 @@ sub parseToken (){
   my $token;
   my $firstChar = 1;
   
+  #print "Parse Token \n";
+  
   while(length($$message)){
     my $char = chop($$message);
     if($char eq " "){ #space seperates arguments
+      #print "parsed token: ".$token."\n";
       return $token;
     }
     if($firstChar){
       #The first char can not be a number
-      if($char ~= m/[A-Za-z_]/){
+      if($char =~ m/[A-Za-z_]/){
         $firstChar = 0;
         $token .= $char;
         next;
       }
     }else{
-      if($char ~= m/[A-Za-z0-9_]/){
+      if($char =~ m/[A-Za-z0-9_]/){
         $token .= $char;
         next;
       }
@@ -102,6 +111,8 @@ sub parseString (){
   my $firstChar = 1;
   my $string;
   
+  #print "Parse String \n";
+  
   my $quotes = chop($$message);
   
   while(length($$message)){
@@ -114,6 +125,7 @@ sub parseString (){
     
     #we hit the end of the string return to parent
     if($char eq $quotes){
+      #print "parsed string: ".$string."\n";
       return $string;
     }
     
@@ -126,5 +138,50 @@ sub parseString (){
 
 sub parseNumber (){
   my $self = shift;
-  return undef;
+  my $message = shift;
+  
+  my $number;
+  my $char = chop($$message);
+  my $point = 0;
+  
+  if($char =~ m/^[0-9|+|\-|\.]$/){
+      $number .= $char;
+      if($char eq "."){
+        $point = 1;
+      }
+  }else{
+    $self->{m_lastError} = "Invalid Begin of Number";
+    return undef;
+  }
+  
+  while(length($$message)){
+    $char = chop($$message);
+    if($char eq " "){
+      last;
+    }elsif(!$char =~ m/^[0-9|.]$/){
+      $self->{m_lastError} = "Invalid Part of Number ".$char;
+      return undef;
+    }
+    if($char eq '.'){ 
+      if($point == 1){#only one point per number
+        $self->{m_lastError} = "Numbers can only have one point";
+        return undef;
+      }else{
+        $point = 1;
+      }
+    }
+    $number .= $char;
+  }
+  #print "parsed number ".$number."\n";
+  return $number;
 }
+
+1;
+#package Test;
+
+#print "Trying to parse: ".$ARGV[0];
+#my $parser = Pms::Prot::Parser->new();
+#$parser->parseMessage($ARGV[0]);
+#if($parser->{m_lastError}){
+#  print "\nDang ".$parser->{m_lastError}."\n";
+#}

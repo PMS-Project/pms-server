@@ -15,4 +15,13 @@ sub new(){
   $self->{m_closing} = 0; #set this to true to indicate the channel is closing
   return $self;
 }
+
+sub isClosing(){
+  return $_[0]->{m_closing};
+}
+
+sub channel() {
+  return $_[0]->{m_channel};
+}
+
 1;
