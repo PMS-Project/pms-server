@@ -37,7 +37,7 @@ sub new (){
   $self->{m_clients}  = ();
   $self->{m_modules}  = ();
   $self->{m_commands} = ();
-  $self->{m_parser}   = Pms::Prot::Parser->new();
+  #$self->{m_parser}   = Pms::Prot::Parser->new();
 
   $self->{m_listeningSocket} = 	tcp_server(undef, 8888, $self->_newConnectionCallback());
 
@@ -112,7 +112,7 @@ sub _newConnectionCallback(){
     $self->{m_clients}{$fh} = new AnyEvent::Handle(
                               fh     => $fh,
                               on_error => sub {
-                                warn "error $_[2]";
+                                warn "EEEET EEEET error $_[2]";
                                 $_[0]->destroy;
                               },
                               on_eof => sub {
@@ -155,5 +155,14 @@ sub registerCommand (){
   }
   warn "Command ".$command." already exists, did not register it"; 
 }
+
+sub executeCommand (){
+  my ($self,$command,@args) = @_;
+  if(exists ${$self->{m_commands}}{$command}){
+    ${$self->{m_commands}}{$command}->(@args);
+  }
+}
+
+
 
 1;
