@@ -30,7 +30,7 @@ sub new (){
   #TODO check if we can read the name of the signal in the callback
   $self->{m_signalHandler} = AnyEvent->signal (
                               signal => "TERM", 
-                              cb => $self->_termSignalCallback() );
+                              cb     => $self->_termSignalCallback() );
 
   $self->{m_events}   = Object::Event->new();
   $self->{m_timers}   = ();
