@@ -7,9 +7,13 @@ use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket;
 use Object::Event;
+
 use Pms::Event::Connect;
-use Pms::Prot::WebSock;
-#use Pms::Prop::Parser;
+use Pms::Prot::Parser;
+use Pms::Core::Connection;
+use Pms::Core::ConnectionProvider;
+
+use Pms::Prot::WebSocket::ConnectionProvider;
 
 our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
                  , 'client_disconnected'    # Any client closed the connection
@@ -37,15 +41,25 @@ sub new (){
   $self->{m_clients}  = ();
   $self->{m_modules}  = ();
   $self->{m_commands} = ();
-  #$self->{m_parser}   = Pms::Prot::Parser->new();
-
-  $self->{m_listeningSocket} = 	tcp_server(undef, 8888, $self->_newConnectionCallback());
+  $self->{m_connections} = ();
+  $self->{m_parser}   = Pms::Prot::Parser->new();
+  $self->{m_connectionProvider} = undef;
+  $self->{m_dataAvailCallback} = $self->_dataAvailableCallback();
+  
+  
+  #build in commands:
+  $self->{m_buildinCommands} = {'send' => $self->_sendCommandCallback(),
+                                'join' => $self->_joinChannelCallback(),
+                                'leave' => $self->_leaveChannelCallback()};
 
   return $self;
 }
 
 sub execute (){
   my $self = shift;
+  
+  $self->{m_connectionProvider} = Pms::Prot::WebSocket::ConnectionProvider->new($self);
+  $self->{m_connectionProvider}->reg_cb('connectionAvailable' => $self->_newConnectionCallback());
    
   $self->loadModules();
   $self->{m_eventLoop} ->recv; #eventloop
@@ -94,54 +108,74 @@ sub _newConnectionCallback(){
   my $self = shift;
 
   return sub{
-    my ($fh, $host, $port) = @_;
-
-    warn "Incoming Connection";
-    my $event = Pms::Event::Connect->new();
-    $self->{m_events}->event('client_connected' => $event);
-    if($event->wasRejected()){
-      warn "Event was rejected, reason: ".$event->reason();
-      syswrite($fh,$event->reason());
-      close($fh);
-      return;
+    
+    while($self->{m_connectionProvider}->connectionsAvailable()){
+      my $connection = $self->{m_connectionProvider}->nextConnection();
+      $self->{m_connections}{$connection->identifier()} = $connection;
+      
+      #check if there is data available already
+      if($connection->messagesAvailable()){
+        $self->{m_dataAvailCallback}->($connection);
+      }
+      
+      #register to connection events
+      $connection->reg_cb( {data_available => $self->_dataAvailableCallback() });
     }
-    
-    warn "Connection got through";
-    
-    #TODO check host and port
-    $self->{m_clients}{$fh} = new AnyEvent::Handle(
-                              fh     => $fh,
-                              on_error => sub {
-                                warn "EEEET EEEET error $_[2]";
-                                $_[0]->destroy;
-                              },
-                              on_eof => sub {
-                                $_[0]->destroy; # destroy handle
-                                warn "Other Side disconnected.";
-                              });
-                    
-    my @start_request; @start_request = (websock_pms => sub {
-        my ($hdl, $line) = @_;
+  }
+}
 
-        warn "Something happend";
-        warn ($line);
-
-        warn "Clients Connected".keys(%{$self->{m_clients}});
-
+sub _dataAvailableCallback (){
+  my $self = shift;
+  return sub {
+        my ($connection) = @_;
         
-        foreach my $k (keys %{$self->{m_clients}}){
-          warn "Key: ".$k;
-          if(defined($self->{m_clients}{$k})){
-              $self->{m_clients}{$k}->push_write(websock_pms => $line);
+        while($connection->messagesAvailable()){
+          my $message = $connection->nextMessage();
+          warn "Reveived Message: ".$message;
+          
+          my %command = $self->{m_parser}->parseMessage($message);
+          if(%command){
+            invokeCommand(%command);
+          }else{
+            #do Error handling
           }
         }
+    }
+}
 
-        # push next request read, possibly from a nested callback
-        warn "Pushing new Read Request";
-        $hdl->push_read(@start_request);
-    }); 
-    $self->{m_clients}{$fh}->push_read(@start_request);
+sub invokeCommand() {
+  my $self = shift;
+  my $connection = shift;
+  my %command = shift;
+  
+  #first try to invoke build in commands
+  if(exists $self->{m_buildinCommands}{$command{'name'}}){
+    $self->{m_buildinCommands}{$command{'name'}}->( @{ $command{'args'} } );
   }
+}
+
+sub _sendCommandCallback (){
+  my $self    = shift;
+  
+  return sub{
+    my $channel = shift;
+    my $message = shift;
+    
+    foreach my $k (keys %{$self->{m_connections}}){
+      warn "Key: ".$k;
+      if(defined($self->{m_connections}{$k})){
+          $self->{m_connections}{$k}->sendMessage($message);
+      }  
+    }
+  }
+}
+
+sub _joinChannelCallback (){
+  
+}
+
+sub _leaveChannelCallback (){
+  
 }
 
 sub registerCommand (){
@@ -155,14 +189,6 @@ sub registerCommand (){
   }
   warn "Command ".$command." already exists, did not register it"; 
 }
-
-sub executeCommand (){
-  my ($self,$command,@args) = @_;
-  if(exists ${$self->{m_commands}}{$command}){
-    ${$self->{m_commands}}{$command}->(@args);
-  }
-}
-
 
 
 1;

@@ -36,7 +36,7 @@ sub initialize (){
     #$eventChain->stop_event;
     
   }
-  , client_connected=> sub 
+  , client_connected => sub 
   { 
     warn "We received a new Connection"; 
     

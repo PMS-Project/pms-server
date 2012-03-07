@@ -22,7 +22,7 @@
   - A Argument can either be a *string* or a *number*.
   
   - A *string* always havo to start with quotes " or ' and end with the same.
-    Every quote in the string needs to be escaped.
+    Every other quote in the string needs to be escaped.
   
   - A *number* can start with +,-, . or a number
 
@@ -58,6 +58,10 @@ sub new{
   my %command = $parser->parseMessage($buffer);
   if($command != undef){
       print "CommandName: ".$$command{command};
+  }else{
+    if($parser->{m_lastError}){
+      print "Error while parsing ";
+    }
   }
   (end)
   

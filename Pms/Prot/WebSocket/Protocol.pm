@@ -13,10 +13,17 @@
   [len]:[string],
   
   A better documentation can be found at: http://cr.yp.to/proto/netstrings.txt
+  
+  To use the code in the Package it just has to be imported. It will automatically
+  register read and write functions to AnyEvent::Handle so we don't have to care
+  about how the Handles internally read the Packages from the Socket.
+  That makes it easy to plug in another Protocol easily.
+  
+  All Functions are private.
 
 =cut
 
-package Pms::Prot::WebSock;
+package Pms::Prot::WebSocket::Protocol;
 
 use strict;
 use Protocol::WebSocket::Handshake::Server;
