@@ -15,7 +15,7 @@ sub new (){
   bless($self,$class);
   
   $self->{m_parent} = shift or die "needs a reference to parent";
-  $self->{m_connectionQueue} = ();
+  $self->{m_connectionQueue} = [];
   
   return $self;
   
@@ -30,6 +30,8 @@ sub nextConnection(){
 
 sub connectionsAvailable(){
   my $self = shift or die "No Ref";
-  
-  return ${ @{ $self->{m_connectionQueue} } };
+  my $count = @{ $self->{m_connectionQueue} };
+  return $count;
 }
+
+1;

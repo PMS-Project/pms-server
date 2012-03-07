@@ -10,7 +10,7 @@ sub new (){
   bless ($self, $class);
   
   $self->{m_parent} = shift;
-  $self->{m_eventGuard} = ();
+  $self->{m_eventGuard} = undef;
   $self->initialize();
   
   warn "Backlog Module created";

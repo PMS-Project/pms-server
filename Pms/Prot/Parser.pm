@@ -82,19 +82,22 @@ sub parseMessage (){
   my $string = shift;
   my $message;
   
+  #reset internal status
+  $self->{m_lastError} = undef;
+  
   #reverse string so we can always grab the last character
   $message = reverse $string;
   
   my $char = chop($message);
   if($char ne "/"){
     $self->{m_lastError} = "First element of message has to be a /";
-    return undef; #error
+    return (); #error
   }
   
   #first we need a token , its the command name
   my $name = $self->_parseToken(\$message);
   if(!defined $name){
-    return undef; #error
+    return (); #error
   }
   
   my @arguments;
@@ -114,18 +117,26 @@ sub parseMessage (){
       $arg = $self->_parseString(\$message);
     }elsif($char =~ m/^[0-9|+|\-|\.]$/){ #a number can start with 0-9 + - or a . 
       $arg = $self->_parseNumber(\$message);
+    }else{
+      $self->{m_lastError} = "Unexpected Element";
+      return (); #error
     }
     if(!defined $arg){
-      return undef;
+      $self->{m_lastError} = "Unknown Error";
+      return ();
     }
     
     push(@arguments,$arg);
   }
   
-  my %funcCall = ('name' => $name,
-                  'args' => @arguments);
+  warn "Command Parsing Success";
   
-  #print "\nParsed:\n ".%funcCall;
+  print "Args: @arguments";
+  
+  my %funcCall = ('name' => $name,
+                  'args' => \@arguments);
+  
+  print "\nParsed:\n ".%funcCall;
   
   return %funcCall;
 }

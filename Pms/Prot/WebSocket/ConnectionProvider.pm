@@ -48,3 +48,5 @@ sub _newConnectionCallback(){
     $self->event('connectionAvailable');
   }
 }
+
+1;

@@ -37,20 +37,20 @@ sub new (){
                               cb     => $self->_termSignalCallback() );
 
   $self->{m_events}   = Object::Event->new();
-  $self->{m_timers}   = ();
-  $self->{m_clients}  = ();
-  $self->{m_modules}  = ();
-  $self->{m_commands} = ();
-  $self->{m_connections} = ();
+  $self->{m_timers}   = [];
+  $self->{m_clients}  = [];
+  $self->{m_modules}  = [];
+  $self->{m_commands} = [];
+  $self->{m_connections} = {};
   $self->{m_parser}   = Pms::Prot::Parser->new();
   $self->{m_connectionProvider} = undef;
   $self->{m_dataAvailCallback} = $self->_dataAvailableCallback();
   
   
   #build in commands:
-  $self->{m_buildinCommands} = {'send' => $self->_sendCommandCallback(),
-                                'join' => $self->_joinChannelCallback(),
-                                'leave' => $self->_leaveChannelCallback()};
+  %{$self->{m_buildinCommands}} = ('send' => $self->_sendCommandCallback(),
+                                   'join' => $self->_joinChannelCallback(),
+                                   'leave' => $self->_leaveChannelCallback());
 
   return $self;
 }
@@ -108,18 +108,20 @@ sub _newConnectionCallback(){
   my $self = shift;
 
   return sub{
+    my $connProvider = shift;
+    my $count = $connProvider->connectionsAvailable;
     
-    while($self->{m_connectionProvider}->connectionsAvailable()){
-      my $connection = $self->{m_connectionProvider}->nextConnection();
-      $self->{m_connections}{$connection->identifier()} = $connection;
+    while($connProvider->connectionsAvailable()){
+      my $connection = $connProvider->nextConnection();
+      my $ident = $connection->identifier();
+      $self->{m_connections}->{ $ident } = $connection;
       
       #check if there is data available already
       if($connection->messagesAvailable()){
         $self->{m_dataAvailCallback}->($connection);
       }
-      
       #register to connection events
-      $connection->reg_cb( {data_available => $self->_dataAvailableCallback() });
+      $connection->reg_cb(dataAvailable => $self->{m_dataAvailCallback});
     }
   }
 }
@@ -128,15 +130,15 @@ sub _dataAvailableCallback (){
   my $self = shift;
   return sub {
         my ($connection) = @_;
-        
         while($connection->messagesAvailable()){
           my $message = $connection->nextMessage();
           warn "Reveived Message: ".$message;
           
           my %command = $self->{m_parser}->parseMessage($message);
-          if(%command){
-            invokeCommand(%command);
+          if(keys %command){
+            $self->invokeCommand($connection,%command);
           }else{
+            warn "Empty ".$self->{m_parser}->{m_lastError};
             #do Error handling
           }
         }
@@ -144,13 +146,15 @@ sub _dataAvailableCallback (){
 }
 
 sub invokeCommand() {
-  my $self = shift;
-  my $connection = shift;
-  my %command = shift;
+  warn "@_";
+  my ($self,$connection,%command) = @_;
   
   #first try to invoke build in commands
   if(exists $self->{m_buildinCommands}{$command{'name'}}){
-    $self->{m_buildinCommands}{$command{'name'}}->( @{ $command{'args'} } );
+    
+    #command hash contains a reference to the arguments array
+    my @args = @{$command{'args'}};
+    $self->{m_buildinCommands}->{$command{'name'}}->( @args );
   }
 }
 
@@ -163,8 +167,9 @@ sub _sendCommandCallback (){
     
     foreach my $k (keys %{$self->{m_connections}}){
       warn "Key: ".$k;
+      warn "Message: ".$message;
       if(defined($self->{m_connections}{$k})){
-          $self->{m_connections}{$k}->sendMessage($message);
+          $self->{m_connections}{$k}->postMessage($message);
       }  
     }
   }
@@ -183,8 +188,8 @@ sub registerCommand (){
   my $command = shift;
   my $cb = shift;
   
-  if(!exists ${$self->{m_commands}}{$command}){
-    ${$self->{m_commands}}{$command} = $cb;
+  if(!exists $self->{m_commands}->{$command}){
+    $self->{m_commands}->{$command} = $cb;
     return;
   }
   warn "Command ".$command." already exists, did not register it"; 

@@ -12,6 +12,8 @@ sub new(){
   my $self = $class->SUPER::new(@_);
   bless($self,$class);
   
+  $self->_initializeHandle();
+  
   return $self;         
 }
 
@@ -37,11 +39,12 @@ sub _initializeHandle(){
                             on_eof   => $self->_onEofCallback());
   
   my @start_request; @start_request = (websock_pms => sub{
-      $self->dataAvailable(@_);
+      my ($handle) = @_;
+      $self->_readyRead(@_);
       
       # push next request read
       warn "Pushing new Read Request";
-      $self->{m_handle}->push_read(@start_request);
+      $handle->push_read(@start_request);
   }); 
   $self->{m_handle}->push_read(@start_request);
 }
@@ -63,10 +66,11 @@ sub _onEofCallback(){
     $self->event('disconnect');
   }
 }
-sub dataAvailable(){
+sub _readyRead(){
   my $self = shift;
   
   my ($hdl, $line) = @_;
+  warn "Data: ".$line;
   push(@{ $self->{m_buffer} },$line);
   $self->event('dataAvailable');
   
@@ -86,3 +90,5 @@ sub sendMessage(){
   my $frame  = Protocol::WebSocket::Frame->new(Pms::Prot::WebSocket::Protocol::_netstringify( $message ));
   syswrite($self->{m_handle}->fh,$frame);
 }
+
+1;
