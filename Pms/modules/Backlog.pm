@@ -25,28 +25,26 @@ sub DESTROY(){
 sub initialize (){
   my $self = shift;
   warn "Registering Events";  
-  $self->{m_eventGuard} = 
-  $self->{m_parent}->connectEvent( 
-  client_connected => sub{
-    my $eventChain = shift;
-    my $eventType  = shift;
-    warn "Hello from Module";
-    
-    #$eventType->reject("Connection Rejected because you suck\n");
-    #$eventChain->stop_event;
-    
-  }
-  , client_connected => sub 
-  { 
-    warn "We received a new Connection"; 
-    
-  });
+  $self->{m_eventGuard} = $self->{m_parent}->connect( 
+    client_connected => sub{
+      my $eventChain = shift;
+      my $eventType  = shift;
+      warn "Hello from Module";
+      
+      #$eventType->reject("Connection Rejected because you suck\n");
+      #$eventChain->stop_event;
+      
+    }, client_connected => sub 
+    { 
+      warn "We received a new Connection";
+    }
+  );
 }
 
 sub shutdown (){
   my $self = shift;
   warn "Shutting Down";
-  $self->{m_parent}->disconnectEvent($self->{m_eventGuard});
+  $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 
 1;

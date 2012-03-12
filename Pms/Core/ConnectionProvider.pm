@@ -3,14 +3,14 @@
 package Pms::Core::ConnectionProvider;
 
 use strict;
-use Object::Event;
+use Pms::Core::Object;
 
-our @ISA = qw(Object::Event);
-our @PmsEvents = ('connectionAvailable');
+our @ISA = qw(Pms::Core::Object);
+our %PmsEvents = ('connectionAvailable' => 1);
 
 sub new (){
   my $class = shift;
-  my $self  = {};
+  my $self = $class->SUPER::new( );
   
   bless($self,$class);
   

@@ -1,17 +1,19 @@
 #!/usr/bin/perl -w 
 package Pms::Core::Connection;
 
-use Object::Event;
+use Pms::Core::Object;
 use AnyEvent::Handle;
 use strict;
 
-our @ISA = qw(Object::Event);
+our @ISA = qw(Pms::Core::Object);
 
-our @PmsEvents = qw(dataAvailable disconnect error);
+our %PmsEvents = ('dataAvailable' => 1,
+                  'disconnect' => 1,
+                  'error' => 1);
 
 sub new (){
   my $class = shift;
-  my $self  = {};
+  my $self = $class->SUPER::new( );
   bless($self,$class);
   
   $self->{m_fh}     = shift or die "Connection needs a Socket Handle";

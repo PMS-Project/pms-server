@@ -54,8 +54,10 @@ sub _onErrorCallback(){
   
   return sub{
     warn "EEEET EEEET error $_[2]";
+    $self->emitSignal('error');
+    
     $_[0]->destroy;
-    $self->event('error');
+    $self->emitSignal('disconnect');
   }
 }
 sub _onEofCallback(){
@@ -63,7 +65,7 @@ sub _onEofCallback(){
   return sub {
     $_[0]->destroy; # destroy handle
     warn "Other Side disconnected.";
-    $self->event('disconnect');
+    $self->emitSignal('disconnect');
   }
 }
 sub _readyRead(){
@@ -72,7 +74,8 @@ sub _readyRead(){
   my ($hdl, $line) = @_;
   warn "Data: ".$line;
   push(@{ $self->{m_buffer} },$line);
-  $self->event('dataAvailable');
+  
+  $self->emitSignal('dataAvailable');
   
 }
 

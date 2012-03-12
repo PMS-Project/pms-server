@@ -8,6 +8,7 @@ use AnyEvent::Handle;
 use AnyEvent::Socket;
 use Object::Event;
 
+use Pms::Core::Object;
 use Pms::Event::Connect;
 use Pms::Prot::Parser;
 use Pms::Core::Connection;
@@ -15,19 +16,38 @@ use Pms::Core::ConnectionProvider;
 
 use Pms::Prot::WebSocket::ConnectionProvider;
 
-our @PmsEvents = ( 'client_connected'       # Event is fired if a new Client connects to the server
-                 , 'client_disconnected'    # Any client closed the connection
-                 , 'new_message'            # Any client sent a message to any channel
-                 , 'user_entered_channel'   # A connected user entered a channel
-                 , 'user_left_channel'      # A connected user left a channel
-                 , 'channel_created'        # A new channel was created on the server 
-                 , 'channel_closed');       # A channel was deleted/closed
+our @ISA = qw(Pms::Core::Object);
+
+our $Debug = $ENV{'PMS_DEBUG'};
+
+our %PmsEvents = ( 'client_connected' => 1      # Event is fired if a new Client connects to the server
+                 , 'client_disconnected' => 1   # Any client closed the connection
+                 , 'new_message' => 1           # Any client sent a message to any channel
+                 , 'user_entered_channel' => 1  # A connected user entered a channel
+                 , 'user_left_channel' => 1     # A connected user left a channel
+                 , 'channel_created' => 1       # A new channel was created on the server 
+                 , 'channel_closed' => 1);      # A channel was deleted/closed
   
 sub new (){
   my $class = shift;
-  my $self  = {};
-
+  my $self = $class->SUPER::new( );
+  
   bless ($self, $class);
+  
+  if($Debug){
+    my $test = Pms::Core::Object->new();
+    if(!$test->_hasEvent("muhls")){
+      warn "Test 1 ok";
+    }else{
+      warn "Test 2 failed";
+    }
+    
+    if($test->_hasEvent("connectionAvailable")){
+      warn "Test 2 ok";
+    }else{
+      warn "Test 2 failed";
+    }
+  }
 
   $self->{m_eventLoop}     = AnyEvent->condvar();
 
@@ -36,7 +56,6 @@ sub new (){
                               signal => "TERM", 
                               cb     => $self->_termSignalCallback() );
 
-  $self->{m_events}   = Object::Event->new();
   $self->{m_timers}   = [];
   $self->{m_clients}  = [];
   $self->{m_modules}  = [];
@@ -82,18 +101,6 @@ sub loadModules (){
     push(@{$self->{m_modules}},$module); 
   }
   closedir $dir;  
-}
-
-sub connectEvent (){
-  my $self = shift;
-  return $self->{m_events}->reg_cb(@_);
-}
-
-sub disconnectEvent (){
-  my $self = shift;
-  my $guard = shift;
-
-  $self->{m_events}->unreg_cb($guard);
 }
 
 sub _termSignalCallback(){
@@ -169,7 +176,7 @@ sub _sendCommandCallback (){
       warn "Key: ".$k;
       warn "Message: ".$message;
       if(defined($self->{m_connections}{$k})){
-          $self->{m_connections}{$k}->postMessage($message);
+          $self->{m_connections}{$k}->postMessage("/message \"default\" \"".$message."\"");
       }  
     }
   }

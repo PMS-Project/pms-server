@@ -31,6 +31,8 @@
 package Pms::Prot::Parser;
 use strict;
 
+our $Debug = $ENV{'PMS_DEBUG'};
+
 =begin nd
   Constructor: new
   Initializes the Object , no arguments
@@ -115,7 +117,7 @@ sub parseMessage (){
     my $arg  = undef;
     if($char eq "\"" || $char eq "'"){
       $arg = $self->_parseString(\$message);
-    }elsif($char =~ m/^[0-9|+|\-|\.]$/){ #a number can start with 0-9 + - or a . 
+    }elsif($char =~ m/^[0-9|\+|\-|\.]$/){ #a number can start with 0-9 + - or a . 
       $arg = $self->_parseNumber(\$message);
     }else{
       $self->{m_lastError} = "Unexpected Element";
@@ -129,14 +131,17 @@ sub parseMessage (){
     push(@arguments,$arg);
   }
   
-  warn "Command Parsing Success";
-  
-  print "Args: @arguments";
+  if($Debug){
+    warn "Command Parsing Success";
+    print "Args: @arguments";
+  }
   
   my %funcCall = ('name' => $name,
                   'args' => \@arguments);
   
-  print "\nParsed:\n ".%funcCall;
+  if($Debug){
+    print "\nParsed:\n ".%funcCall;
+  }
   
   return %funcCall;
 }

@@ -34,7 +34,7 @@ sub _newConnectionCallback(){
 
     warn "Incoming Connection";
     my $event = Pms::Event::Connect->new();
-    $self->{m_parent}->{m_events}->event('client_connected' => $event);
+    $self->{m_parent}->emitSignal('client_connected' => $event);
     if($event->wasRejected()){
       warn "Event was rejected, reason: ".$event->reason();
       $connection->sendMessage($event->reason());
@@ -45,7 +45,8 @@ sub _newConnectionCallback(){
     warn "Connection got through";
     
     push(@{ $self->{m_connectionQueue} },$connection);
-    $self->event('connectionAvailable');
+    
+    $self->emitSignal('connectionAvailable');
   }
 }
 
