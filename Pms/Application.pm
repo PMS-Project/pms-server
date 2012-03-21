@@ -13,6 +13,7 @@ use Pms::Event::Connect;
 use Pms::Prot::Parser;
 use Pms::Core::Connection;
 use Pms::Core::ConnectionProvider;
+use Pms::Core::Channel;
 
 use Pms::Prot::WebSocket::ConnectionProvider;
 
@@ -61,9 +62,12 @@ sub new (){
   $self->{m_modules}  = [];
   $self->{m_commands} = [];
   $self->{m_connections} = {};
+  $self->{m_channels} = {};
   $self->{m_parser}   = Pms::Prot::Parser->new();
   $self->{m_connectionProvider} = undef;
   $self->{m_dataAvailCallback} = $self->_dataAvailableCallback();
+  
+  $self->{m_channels}{"Test"} = Pms::Core::Channel->new($self,"Test");
   
   
   #build in commands:
@@ -128,7 +132,7 @@ sub _newConnectionCallback(){
         $self->{m_dataAvailCallback}->($connection);
       }
       #register to connection events
-      $connection->reg_cb(dataAvailable => $self->{m_dataAvailCallback});
+      $connection->connect(dataAvailable => $self->{m_dataAvailCallback});
     }
   }
 }
@@ -161,7 +165,7 @@ sub invokeCommand() {
     
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
-    $self->{m_buildinCommands}->{$command{'name'}}->( @args );
+    $self->{m_buildinCommands}->{$command{'name'}}->( $connection,@args );
   }
 }
 
@@ -169,6 +173,7 @@ sub _sendCommandCallback (){
   my $self    = shift;
   
   return sub{
+    my $connection = shift;
     my $channel = shift;
     my $message = shift;
     
@@ -176,18 +181,36 @@ sub _sendCommandCallback (){
       warn "Key: ".$k;
       warn "Message: ".$message;
       if(defined($self->{m_connections}{$k})){
-          $self->{m_connections}{$k}->postMessage("/message \"default\" \"".$message."\"");
+          $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$message."\"");
       }  
     }
   }
 }
 
 sub _joinChannelCallback (){
+  my $self = shift or die "Need Ref";
   
+  return sub{
+    my $connection = shift or die "_joinChannelCallback called with wrong argument count";
+    my $channel = shift or die "_joinChannelCallback called with wrong argument count";
+    
+    if(defined $self->{m_channels}{$channel}){
+      $self->{m_channels}{$channel}->addConnection($connection);
+    }
+  }
 }
 
 sub _leaveChannelCallback (){
+  my $self = shift or die "Need Ref";
   
+  return sub{
+    my $connection = shift or die "_leaveChannelCallback called with wrong argument count";
+    my $channel = shift or die "_leaveChannelCallback called with wrong argument count";
+    
+    if(defined $self->{m_channels}{$channel}){
+      $self->{m_channels}{$channel}->removeConnection($connection);
+    }
+  }  
 }
 
 sub registerCommand (){

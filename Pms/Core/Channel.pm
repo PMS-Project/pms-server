@@ -16,20 +16,43 @@ sub new (){
   return $self;
 }
 
+sub handleReceivedMessage(){
+  my $self = shift or die "Need Ref";
+  my $message = shift or die "Need Message";
+  
+  my $keys = keys %{ $self->{m_connections} };
+  
+  foreach my $k (keys %{$self->{m_connections}}){
+    if(defined($self->{m_connections}{$k})){
+      $self->{m_connections}{$k}->postMessage("/message \"".$self->{m_name}."\" \"".$message."\"");
+    }
+  } 
+}
+
 sub addConnection (){
   my $self = shift;
   my $connection = shift;
   
-  $self->{m_connections}->{$connection} = $connection;
+  #we are already in the channel
+  if(defined $self->{m_connections}->{$connection->identifier()}){
+    return;
+  }
+  
+  $self->{m_connections}->{$connection->identifier()} = $connection;
+  $connection->postMessage("/openwindow \"".$self->{m_name}."\"");
 }
 
 sub removeConnection() {
   my $self = shift;
   my $connection = shift;
   
-  delete $self->{m_connections}->{$connection};
+  #we are not in the channel
+  if(!defined $self->{m_connections}->{$connection->identifier()}){
+    return;
+  }
+  
+  delete $self->{m_connections}->{$connection->identifier()};
+  $connection->postMessage("/closewindow \"".$self->{m_name}."\"");
   
 }
-
-
 1;

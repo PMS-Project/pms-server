@@ -116,15 +116,16 @@ sub parseMessage (){
     #print "Next Char: '".$char."'\n";
     my $arg  = undef;
     if($char eq "\"" || $char eq "'"){
-      $arg = $self->_parseString(\$message);
+      $arg = $self->_parseQuotedString(\$message);
     }elsif($char =~ m/^[0-9|\+|\-|\.]$/){ #a number can start with 0-9 + - or a . 
       $arg = $self->_parseNumber(\$message);
     }else{
-      $self->{m_lastError} = "Unexpected Element";
-      return (); #error
+      $arg = $self->_parseUnquotedString(\$message);
     }
     if(!defined $arg){
-      $self->{m_lastError} = "Unknown Error";
+      if(!defined $self->{m_lastError}){
+        $self->{m_lastError} = "Unknown Error";
+      }
       return ();
     }
     
@@ -211,8 +212,8 @@ sub _parseToken (){
 }
 
 =begin nd
-  Function: _parseString
-    Tries to read a string from the buffer and returns it
+  Function: _parseQuotedString
+    Tries to read a quoted string from the buffer and returns it
   
   Access:
     Private
@@ -223,32 +224,80 @@ sub _parseToken (){
   Returns:
     The string or undef if a error happened
 =cut
+sub _parseQuotedString (){
+  my $self = shift;
+  my $message = shift;
+  
+  my $quotes = chop($$message);
+  return $self->_parseString($message,$quotes);
+
+}
+
+
+=begin nd
+  Function: _parseUnquotedString
+    Tries to read a unquoted string from the buffer and returns it.
+    A unquoted String ends on any unescaped whitespace
+  
+  Access:
+    Private
+    
+  Parameters:
+    $buffer - the current read buffer
+    
+  Returns:
+    The string or undef if a error happened
+=cut
+sub _parseUnquotedString (){
+  my $self = shift;
+  my $message = shift;
+  
+  my $quotes = undef;
+  return $self->_parseString($message,$quotes);
+}
+
+
 sub _parseString (){
   my $self = shift;
   my $message = shift;
+  my $quotes = shift;
   my $firstChar = 1;
-  my $string;
+  my $string;  
   
-  #print "Parse String \n";
-  
-  my $quotes = chop($$message);
-  
-  while(length($$message)){
+    while(length($$message)){
     my $char = chop($$message);
     
     if($char eq "\\"){
       #escaping just append the next char
+      if(!length($$message)){
+        $self->{m_lastError} = "Unexpected End of String";
+        return undef;
+      }
+      $char = chop($$message);
+      $string .= $char;
       next;
     }
     
-    #we hit the end of the string return to parent
-    if($char eq $quotes){
-      #print "parsed string: ".$string."\n";
-      return $string;
+    #if we have no quotes defined every whitespace,if not escaped, will end the string
+    if(!defined $quotes){
+      if($char =~ m/\s/){
+        return $string;
+      }
+    }else{
+      #we hit the end of the string return to parent
+      if($char eq $quotes){
+        #print "parsed string: ".$string."\n";
+        return $string;
+      }
     }
-    
     $string .= $char;
   }
+  
+  #A unquoted String ends when the message ends
+  if(!defined $quotes){
+    return $string;
+  }
+  
   #if we did not hit the end of the string we have a error
   $self->{m_lastError} = "String is missing its end quotes";
   return undef;
