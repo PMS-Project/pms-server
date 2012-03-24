@@ -207,8 +207,12 @@ sub _parseToken (){
     $self->{m_lastError} = "A token can only contain the following chars: [A-Za-z0-9_] and can NOT start with a number";
     return undef; #error
   }
-  $self->{m_lastError} = "Empty token";
-  return undef;
+  
+  if(!length($token)){
+    $self->{m_lastError} = "Empty token";
+    return undef;
+  }
+  return $token;
 }
 
 =begin nd

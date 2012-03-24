@@ -9,9 +9,9 @@ sub new(){
   my $self  = $class->SUPER::new();
   bless($self,$class);
   
-  $self->{m_user}    = shift;
-  $self->{m_channel} = shift;
-  $self->{m_message} = shift;
+  $self->{m_connection} = shift;
+  $self->{m_channel}    = shift;
+  $self->{m_message}    = shift;
   return $self;
 }
 1;

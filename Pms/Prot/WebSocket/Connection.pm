@@ -94,4 +94,9 @@ sub sendMessage(){
   syswrite($self->{m_handle}->fh,$frame);
 }
 
+sub close(){
+  my $self = shift or die "Need Ref";
+  $self->{m_handle}->push_shutdown();
+}
+
 1;

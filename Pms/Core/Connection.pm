@@ -26,6 +26,16 @@ sub new (){
   return $self;
 }
 
+=begin nd
+ Function: close
+ 
+ Closes the connection to the other side
+ 
+=cut
+sub close(){
+  die "This function is virtual, it needs to be implemented in the subclass";  
+}
+
 
 =begin nd
  Function: identifier

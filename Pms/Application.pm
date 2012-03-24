@@ -10,6 +10,11 @@ use Object::Event;
 
 use Pms::Core::Object;
 use Pms::Event::Connect;
+use Pms::Event::Message;
+use Pms::Event::Channel;
+use Pms::Event::Join;
+use Pms::Event::Leave;
+
 use Pms::Prot::Parser;
 use Pms::Core::Connection;
 use Pms::Core::ConnectionProvider;
@@ -26,6 +31,7 @@ our %PmsEvents = ( 'client_connected' => 1      # Event is fired if a new Client
                  , 'new_message' => 1           # Any client sent a message to any channel
                  , 'user_entered_channel' => 1  # A connected user entered a channel
                  , 'user_left_channel' => 1     # A connected user left a channel
+                 , 'about_to_create_channel' => 1       # A user tries to create a new channel
                  , 'channel_created' => 1       # A new channel was created on the server 
                  , 'channel_closed' => 1);      # A channel was deleted/closed
   
@@ -73,7 +79,9 @@ sub new (){
   #build in commands:
   %{$self->{m_buildinCommands}} = ('send' => $self->_sendCommandCallback(),
                                    'join' => $self->_joinChannelCallback(),
-                                   'leave' => $self->_leaveChannelCallback());
+                                   'leave' => $self->_leaveChannelCallback(),
+                                   'createChannel' => $self->_createChannelCallback()
+                                  );
 
   return $self;
 }
@@ -125,6 +133,17 @@ sub _newConnectionCallback(){
     while($connProvider->connectionsAvailable()){
       my $connection = $connProvider->nextConnection();
       my $ident = $connection->identifier();
+      
+      my $event = Pms::Event::Connect->new($connection);
+      $self->emitSignal('client_connected' => $event);
+    
+      if($event->wasRejected()){
+        warn "Connection was rejected, reason: ".$event->reason();
+        $connection->sendMessage("/message \"default\" \"Connection rejected: ".$event->reason()."\" ");
+        $connection->close();
+        next;
+      }
+      
       $self->{m_connections}->{ $ident } = $connection;
       
       #check if there is data available already
@@ -162,7 +181,7 @@ sub invokeCommand() {
   
   #first try to invoke build in commands
   if(exists $self->{m_buildinCommands}{$command{'name'}}){
-    
+    warn "Invoking Command: ".$command{'name'};
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
     $self->{m_buildinCommands}->{$command{'name'}}->( $connection,@args );
@@ -175,11 +194,29 @@ sub _sendCommandCallback (){
   return sub{
     my $connection = shift;
     my $channel = shift;
-    my $message = shift;
+    my $message = shift;        
+    
+    if(!defined $connection || !defined $channel || !defined $message){
+      $connection->postMessage("/message \"default\" \"Wrong Parameters for send command\"");
+      return;
+    }
+    
+    my $event = Pms::Event::Message->new($connection,$channel,$message);
+    $self->emitSignal('new_message' => $event);
+    
+    if($event->wasRejected()){
+      if($Debug){
+        warn "Message was rejected, reason: ".$event->reason();
+      }
+      $connection->postMessage("/message \"".$channel."\" \"Message rejected: ".$event->reason()."\" ");
+      return;
+    }
     
     foreach my $k (keys %{$self->{m_connections}}){
-      warn "Key: ".$k;
-      warn "Message: ".$message;
+      if($Debug){
+        warn "Key: ".$k;
+        warn "Message: ".$message;
+      }
       if(defined($self->{m_connections}{$k})){
           $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$message."\"");
       }  
@@ -187,15 +224,69 @@ sub _sendCommandCallback (){
   }
 }
 
+sub _createChannelCallback(){
+  my $self = shift or die "Need Ref";
+  
+  return sub{
+    my $connection = shift;
+    my $channel    = shift;
+    
+    if(!defined $connection || !defined $channel){
+      $connection->postMessage("/message \"default\" \"Wrong Parameters for createChannel command\"");
+      return;
+    }
+    
+    if(defined $self->{m_channels}{$channel}){
+      $connection->postMessage("/message \"default\" \"Channel ".$channel." already exists\"");
+      return;
+    }
+    
+    my $event = Pms::Event::Channel->new($connection,$channel);
+    $self->emitSignal(about_to_create_channel => $event);
+    if($event->wasRejected()){
+      $connection->postMessage("/message \"default\" \"Can not create the channel: ".$channel." Reason: ".$event->reason()."\"");
+      return;
+    }
+    
+    $self->{m_channels}{$channel} = new Pms::Core::Channel($self,$channel);
+    
+    #let the user enter the channel
+    $self->{m_buildinCommands}->{'join'}->($connection,$channel);
+    
+    #tell all modules the channel was created
+    $event = new Pms::Event::Channel($connection,$channel);
+    $self->emitSignal(channel_created => $event);
+    
+  }
+}
+
 sub _joinChannelCallback (){
   my $self = shift or die "Need Ref";
   
   return sub{
-    my $connection = shift or die "_joinChannelCallback called with wrong argument count";
-    my $channel = shift or die "_joinChannelCallback called with wrong argument count";
+    my $connection = shift;
+    my $channel = shift;
+    
+    if(!defined $connection || !defined $channel){
+      $connection->postMessage("/message \"default\" \"Wrong Parameters for join command\"");
+      return;
+    }
+    
+    my $event = Pms::Event::Join->new($connection,$channel);
+    $self->emitSignal('user_entered_channel' => $event);
+    
+    if($event->wasRejected()){
+      if($Debug){
+        warn "Join was rejected, reason: ".$event->reason();
+      }
+      $connection->postMessage("/message \"default\" \"Join rejected: ".$event->reason()."\" ");
+      return;
+    }
     
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->addConnection($connection);
+    }else{
+      $connection->postMessage("/message \"default\" \"Channel ".$channel." does not exist\" ");
     }
   }
 }
@@ -204,8 +295,16 @@ sub _leaveChannelCallback (){
   my $self = shift or die "Need Ref";
   
   return sub{
-    my $connection = shift or die "_leaveChannelCallback called with wrong argument count";
-    my $channel = shift or die "_leaveChannelCallback called with wrong argument count";
+    my $connection = shift;
+    my $channel = shift;
+    
+    if(!defined $connection || !defined $channel){
+      $connection->postMessage("/message \"default\" \"Wrong Parameters for leave command\"");
+      return;
+    }
+    
+    my $event = Pms::Event::Leave->new($connection,$channel);
+    $self->emitSignal('user_left_channel' => $event);
     
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->removeConnection($connection);

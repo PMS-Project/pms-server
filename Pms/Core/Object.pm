@@ -7,7 +7,7 @@
   Description:
   
   This Package implements the Base Class for all Object in 
-  PMS that nees to send signals or events.
+  PMS that need to send signals or events.
   
   Every subclass has to define a global Hash called %PmsEvents
   and put all available events in it. Pms::Object will automatically
@@ -69,7 +69,7 @@ sub emitSignal (){
     }
   }
   
-  $self->event($signal => @_);
+  return $self->event($signal => @_);
 }
 
 sub disconnect (){
@@ -117,7 +117,7 @@ sub _getSuperClasses(){
   my $self = shift;
   my $class = shift;
   
-  #we need to disable it, so we can use symbolic references
+  #we need to disable strict refs, so we can use symbolic references
   no strict 'refs';
   
   my @classes = @{"${class}::ISA"};
@@ -128,7 +128,7 @@ sub _getEvents(){
   my $self = shift;
   my $class = shift;
   
-  #we need to disable it, so we can use symbolic references
+  #we need to disable strict refs, so we can use symbolic references
   no strict 'refs';
   
   my %events = %{"${class}::PmsEvents"};

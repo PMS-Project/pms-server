@@ -11,6 +11,7 @@ sub new(){
   my $self  = $class->SUPER::new();
   bless($self,$class);
   
+  $self->{m_connection} = shift;
   $self->{m_ip} = undef;
   return $self;
 }

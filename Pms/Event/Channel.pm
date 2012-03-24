@@ -16,6 +16,10 @@ sub new(){
   return $self;
 }
 
+sub setClosing(){
+  $_[0]->{m_closing} = $_[1];
+}
+
 sub isClosing(){
   return $_[0]->{m_closing};
 }

@@ -5,7 +5,6 @@ package Pms::Prot::WebSocket::ConnectionProvider;
 use strict;
 use Pms::Core::ConnectionProvider;
 use Pms::Prot::WebSocket::Connection;
-use Pms::Event::Connect;
 
 use AnyEvent;
 use AnyEvent::Handle;
@@ -31,18 +30,6 @@ sub _newConnectionCallback(){
     my ($fh, $host, $port) = @_;
     
     my $connection = Pms::Prot::WebSocket::Connection->new($fh,$host,$port);
-
-    warn "Incoming Connection";
-    my $event = Pms::Event::Connect->new();
-    $self->{m_parent}->emitSignal('client_connected' => $event);
-    if($event->wasRejected()){
-      warn "Event was rejected, reason: ".$event->reason();
-      $connection->sendMessage($event->reason());
-      close($fh);
-      return;
-    }
-    
-    warn "Connection got through";
     
     push(@{ $self->{m_connectionQueue} },$connection);
     
