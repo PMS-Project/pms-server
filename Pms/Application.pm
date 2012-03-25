@@ -68,6 +68,7 @@ sub new (){
   $self->{m_modules}  = [];
   $self->{m_commands} = [];
   $self->{m_connections} = {};
+  $self->{m_users}       = {}; #users to connection map
   $self->{m_channels} = {};
   $self->{m_parser}   = Pms::Prot::Parser->new();
   $self->{m_connectionProvider} = undef;
@@ -80,7 +81,7 @@ sub new (){
   %{$self->{m_buildinCommands}} = ('send' => $self->_sendCommandCallback(),
                                    'join' => $self->_joinChannelCallback(),
                                    'leave' => $self->_leaveChannelCallback(),
-                                   'createChannel' => $self->_createChannelCallback()
+                                   'create' => $self->_createChannelCallback()
                                   );
 
   return $self;
@@ -139,12 +140,20 @@ sub _newConnectionCallback(){
     
       if($event->wasRejected()){
         warn "Connection was rejected, reason: ".$event->reason();
-        $connection->sendMessage("/message \"default\" \"Connection rejected: ".$event->reason()."\" ");
+        $connection->sendMessage("/serverMessage \"default\" \"Connection rejected: ".$event->reason()."\" ");
         $connection->close();
         next;
       }
       
+      my $user = "User";
+      my $cnt  = 0;
+      while(exists($self->{m_users}->{$user.$cnt})){
+        $cnt+=1;
+      }
+      
+      $connection->setUsername($user.$cnt);
       $self->{m_connections}->{ $ident } = $connection;
+      $self->{m_users}->{$user.$cnt} = $connection;
       
       #check if there is data available already
       if($connection->messagesAvailable()){
@@ -197,7 +206,7 @@ sub _sendCommandCallback (){
     my $message = shift;        
     
     if(!defined $connection || !defined $channel || !defined $message){
-      $connection->postMessage("/message \"default\" \"Wrong Parameters for send command\"");
+      $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for send command\"");
       return;
     }
     
@@ -208,9 +217,12 @@ sub _sendCommandCallback (){
       if($Debug){
         warn "Message was rejected, reason: ".$event->reason();
       }
-      $connection->postMessage("/message \"".$channel."\" \"Message rejected: ".$event->reason()."\" ");
+      $connection->postMessage("/serverMessage \"".$channel."\" \"Message rejected: ".$event->reason()."\" ");
       return;
     }
+    
+    my $who  = $connection->username();
+    my $when = time();
     
     foreach my $k (keys %{$self->{m_connections}}){
       if($Debug){
@@ -218,7 +230,7 @@ sub _sendCommandCallback (){
         warn "Message: ".$message;
       }
       if(defined($self->{m_connections}{$k})){
-          $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$message."\"");
+        $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$who"\" ".$when." \"".$message."\"");
       }  
     }
   }
@@ -232,19 +244,19 @@ sub _createChannelCallback(){
     my $channel    = shift;
     
     if(!defined $connection || !defined $channel){
-      $connection->postMessage("/message \"default\" \"Wrong Parameters for createChannel command\"");
+      $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for createChannel command\"");
       return;
     }
     
     if(defined $self->{m_channels}{$channel}){
-      $connection->postMessage("/message \"default\" \"Channel ".$channel." already exists\"");
+      $connection->postMessage("/serverMessage \"default\" \"Channel ".$channel." already exists\"");
       return;
     }
     
     my $event = Pms::Event::Channel->new($connection,$channel);
     $self->emitSignal(about_to_create_channel => $event);
     if($event->wasRejected()){
-      $connection->postMessage("/message \"default\" \"Can not create the channel: ".$channel." Reason: ".$event->reason()."\"");
+      $connection->postMessage("/serverMessage \"default\" \"Can not create the channel: ".$channel." Reason: ".$event->reason()."\"");
       return;
     }
     
@@ -268,7 +280,7 @@ sub _joinChannelCallback (){
     my $channel = shift;
     
     if(!defined $connection || !defined $channel){
-      $connection->postMessage("/message \"default\" \"Wrong Parameters for join command\"");
+      $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for join command\"");
       return;
     }
     
@@ -279,14 +291,14 @@ sub _joinChannelCallback (){
       if($Debug){
         warn "Join was rejected, reason: ".$event->reason();
       }
-      $connection->postMessage("/message \"default\" \"Join rejected: ".$event->reason()."\" ");
+      $connection->postMessage("/serverMessage \"default\" \"Join rejected: ".$event->reason()."\" ");
       return;
     }
     
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->addConnection($connection);
     }else{
-      $connection->postMessage("/message \"default\" \"Channel ".$channel." does not exist\" ");
+      $connection->postMessage("/serverMessage \"default\" \"Channel ".$channel." does not exist\" ");
     }
   }
 }
@@ -299,7 +311,7 @@ sub _leaveChannelCallback (){
     my $channel = shift;
     
     if(!defined $connection || !defined $channel){
-      $connection->postMessage("/message \"default\" \"Wrong Parameters for leave command\"");
+      $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for leave command\"");
       return;
     }
     

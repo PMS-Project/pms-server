@@ -114,4 +114,30 @@ sub postMessage(){
   die "This function is virtual, it needs to be implemented in the subclass";
 }
 
+=begin nd
+ Function: setUsername
+ 
+ Changes the username to a new value.
+ 
+ Warning:
+    This does NOT check if the user exists in the server
+ 
+ Parameters:
+    username - The new username
+ 
+=cut
+sub setUsername(){
+  $_[0]->{m_user} = $_[1];
+}
+
+=begin nd
+ Function: username
+ 
+ Returns: 
+ The username associated with this connection
+=cut
+sub username(){
+  return $_[0]->{m_user};
+}
+
 1;
