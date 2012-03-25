@@ -276,7 +276,7 @@ sub _joinChannelCallback (){
   return sub{
     my $connection = shift;
     my $channel = shift;
-    warn "ENTERING CHANNEL $channel";
+
     if(!defined $connection || !defined $channel){
       $connection->postMessage("/message \"default\" \"Wrong Parameters for join command\"");
       return;
