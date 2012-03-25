@@ -80,7 +80,8 @@ sub new (){
   %{$self->{m_buildinCommands}} = ('send' => $self->_sendCommandCallback(),
                                    'join' => $self->_joinChannelCallback(),
                                    'leave' => $self->_leaveChannelCallback(),
-                                   'createChannel' => $self->_createChannelCallback()
+                                   'create' => $self->_createChannelCallback(),
+                                   'list' => $self->_listChannelCallback()
                                   );
 
   return $self;
@@ -211,15 +212,19 @@ sub _sendCommandCallback (){
       $connection->postMessage("/message \"".$channel."\" \"Message rejected: ".$event->reason()."\" ");
       return;
     }
-    
-    foreach my $k (keys %{$self->{m_connections}}){
-      if($Debug){
-        warn "Key: ".$k;
-        warn "Message: ".$message;
+
+    if($channel eq "default"){
+      $connection->postMessage("/message \"".$channel."\" \"".$message."\"");
+    }else{
+      foreach my $k (keys %{$self->{m_connections}}){
+        if($Debug){
+          warn "Key: ".$k;
+          warn "Message: ".$message;
+        }
+        if(defined($self->{m_connections}{$k})){
+            $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$message."\"");
+        }
       }
-      if(defined($self->{m_connections}{$k})){
-          $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$message."\"");
-      }  
     }
   }
 }
@@ -233,6 +238,11 @@ sub _createChannelCallback(){
     
     if(!defined $connection || !defined $channel){
       $connection->postMessage("/message \"default\" \"Wrong Parameters for createChannel command\"");
+      return;
+    }
+
+    if($channel =~ m/[^\d\w]+/){
+      $connection->postMessage("/message \"default\" \"Channelname can only contain digits and word characters\"");
       return;
     }
     
@@ -266,15 +276,15 @@ sub _joinChannelCallback (){
   return sub{
     my $connection = shift;
     my $channel = shift;
-    
+    warn "ENTERING CHANNEL $channel";
     if(!defined $connection || !defined $channel){
       $connection->postMessage("/message \"default\" \"Wrong Parameters for join command\"");
       return;
     }
-    
+
     my $event = Pms::Event::Join->new($connection,$channel);
     $self->emitSignal('user_entered_channel' => $event);
-    
+
     if($event->wasRejected()){
       if($Debug){
         warn "Join was rejected, reason: ".$event->reason();
@@ -282,7 +292,7 @@ sub _joinChannelCallback (){
       $connection->postMessage("/message \"default\" \"Join rejected: ".$event->reason()."\" ");
       return;
     }
-    
+
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->addConnection($connection);
     }else{
@@ -309,7 +319,21 @@ sub _leaveChannelCallback (){
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->removeConnection($connection);
     }
+    
   }  
+}
+
+sub _listChannelCallback (){
+  my $self = shift or die "Need Ref";
+
+  return sub{
+    my $connection = shift;
+
+    $connection->postMessage("/message \"default\" \"Available channels:\"");
+    foreach(keys %$self->{m_channels}){
+      $connection->postMessage("/message \"default\" \"$_\"");
+    }
+  }
 }
 
 sub registerCommand (){
