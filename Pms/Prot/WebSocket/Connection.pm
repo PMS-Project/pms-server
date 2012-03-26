@@ -12,6 +12,7 @@ sub new(){
   my $self = $class->SUPER::new(@_);
   bless($self,$class);
   
+  $self->{m_handle} = undef;
   $self->_initializeHandle();
   
   return $self;         
@@ -56,8 +57,8 @@ sub _onErrorCallback(){
     warn "EEEET EEEET error $_[2]";
     $self->emitSignal('error');
     
-    $_[0]->destroy;
     $self->emitSignal('disconnect');
+    $_[0]->destroy;
   }
 }
 sub _onEofCallback(){
@@ -97,6 +98,13 @@ sub sendMessage(){
 sub close(){
   my $self = shift or die "Need Ref";
   $self->{m_handle}->push_shutdown();
+}
+
+sub identifier(){
+  my $self = shift or die "We need a Reference";
+  
+  #for now we just use the filehandle
+  return $self->{m_handle}->fh;
 }
 
 1;

@@ -73,6 +73,7 @@ sub new (){
   $self->{m_parser}   = Pms::Prot::Parser->new();
   $self->{m_connectionProvider} = undef;
   $self->{m_dataAvailCallback} = $self->_dataAvailableCallback();
+  $self->{m_clientDisconnectCallback} = $self->_clientDisconnectCallback();
   
   $self->{m_channels}{"Test"} = Pms::Core::Channel->new($self,"Test");
   
@@ -146,6 +147,7 @@ sub _newConnectionCallback(){
         next;
       }
       
+      #TODO maybe use timestamp for generic username
       my $user = "User";
       my $cnt  = 0;
       while(exists($self->{m_users}->{$user.$cnt})){
@@ -161,7 +163,9 @@ sub _newConnectionCallback(){
         $self->{m_dataAvailCallback}->($connection);
       }
       #register to connection events
-      $connection->connect(dataAvailable => $self->{m_dataAvailCallback});
+      $connection->connect(dataAvailable => $self->{m_dataAvailCallback},
+                           disconnect    => $self->{m_clientDisconnectCallback}
+      );
     }
   }
 }
@@ -183,6 +187,16 @@ sub _dataAvailableCallback (){
           }
         }
     }
+}
+
+sub _clientDisconnectCallback (){
+  my $self = shift;
+  return sub{
+    my ($connection) = @_;
+    
+    delete $self->{m_connections}->{$connection->identifier()};
+    delete $self->{m_users}->{$connection->username()};
+  }
 }
 
 sub invokeCommand() {
@@ -211,6 +225,14 @@ sub _sendCommandCallback (){
       return;
     }
     
+    if(!defined $self->{m_channels}->{$channel}){
+      $connection->postMessage("/serverMessage \"default\" \"Channel does not exist\" ");
+    }
+    
+    my $who  = $connection->username();
+    my $when = time();
+    
+    #TODO put who and when in the event
     my $event = Pms::Event::Message->new($connection,$channel,$message);
     $self->emitSignal('new_message' => $event);
     
@@ -222,21 +244,10 @@ sub _sendCommandCallback (){
       return;
     }
     
-    my $who  = $connection->username();
-    my $when = time();
-    
     if($channel eq "default"){
       $connection->postMessage("/message \"".$channel."\" \"".$message."\"");
     }else{
-      foreach my $k (keys %{$self->{m_connections}}){
-        if($Debug){
-          warn "Key: ".$k;
-          warn "Message: ".$message;
-        }
-        if(defined($self->{m_connections}{$k})){
-          $self->{m_connections}{$k}->postMessage("/message \"".$channel."\" \"".$who"\" ".$when." \"".$message."\"");
-        } 
-      }
+      $self->{m_channels}->{$channel}->sendMessage($who,$when,$message);
     }
   }
 }
@@ -342,7 +353,7 @@ sub _listChannelCallback (){
     my $connection = shift;
 
     $connection->postMessage("/message \"default\" \"Available channels:\"");
-    foreach(keys %$self->{m_channels}){
+    foreach(keys %{ $self->{m_channels} }){
       $connection->postMessage("/message \"default\" \"$_\"");
     }
   }

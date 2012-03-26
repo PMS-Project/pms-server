@@ -16,15 +16,38 @@ sub new (){
   return $self;
 }
 
-sub handleReceivedMessage(){
+sub _connectionForIdent(){
   my $self = shift or die "Need Ref";
+  my $key  = shift or die "Need Key";
+  
+  return $self->{m_connections}->{$key}->{"object"};
+}
+
+sub sendMessage(){
+  my $self = shift or die "Need Ref";
+  my $who  = shift or die "Need a username";
+  my $when = shift or die "Need a when";
+  my $message = shift or die "Need Message";
+  
+  
+  my $keys = keys %{ $self->{m_connections} };
+  
+  foreach my $k (keys %{$self->{m_connections}}){
+    if(defined($self->{m_connections}->{$k})){
+       $self->_connectionForIdent($k)->postMessage("/message \"".$self->{m_name}."\" \"".$who."\" ".$when." \"".$message."\"");
+    }
+  } 
+}
+
+sub sendChannelMessage(){
+  my $self = shift or die "Need Ref";  
   my $message = shift or die "Need Message";
   
   my $keys = keys %{ $self->{m_connections} };
   
   foreach my $k (keys %{$self->{m_connections}}){
-    if(defined($self->{m_connections}{$k})){
-      $self->{m_connections}{$k}->postMessage("/message \"".$self->{m_name}."\" \"".$message."\"");
+    if(defined($self->{m_connections}->{$k})){
+       $self->_connectionForIdent($k)->postMessage("/serverMessage \"".$self->{m_name}."\" \"".$message."\"");
     }
   } 
 }
@@ -38,21 +61,41 @@ sub addConnection (){
     return;
   }
   
-  $self->{m_connections}->{$connection->identifier()} = $connection;
+  my $stuff= { "eventguard" => $connection->connect("disconnect" => $self->_disconnectCallback()),
+               "object"     => $connection
+  };
+  
+  
+  $self->{m_connections}->{$connection->identifier()} = $stuff;
   $connection->postMessage("/openwindow \"".$self->{m_name}."\"");
+}
+
+sub _disconnectCallback(){
+  my $self = shift;
+  return sub{
+    my $connection = shift;
+    $self->removeConnection($connection);
+  }
 }
 
 sub removeConnection() {
   my $self = shift;
   my $connection = shift;
   
+  my $ident = $connection->identifier();
+  
   #we are not in the channel
-  if(!defined $self->{m_connections}->{$connection->identifier()}){
+  if(!defined $self->{m_connections}->{$ident}){
     return;
   }
   
+  $connection->disconnect($self->{m_connections}->{$ident}->{"eventguard"});
+  
   delete $self->{m_connections}->{$connection->identifier()};
+  
+  #TODO check if connection is still open 
   $connection->postMessage("/closewindow \"".$self->{m_name}."\"");
   
+  $self->sendChannelMessage("Client ".$connection->username()." disconnected");
 }
 1;

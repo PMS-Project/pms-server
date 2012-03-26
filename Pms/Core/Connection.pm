@@ -21,7 +21,6 @@ sub new (){
   $self->{m_port}   = shift or die "Connection needs a Port Value";
   $self->{m_user}   = undef;
   $self->{m_buffer} = []; #internal read buffer
-  $self->{m_handle} = undef;
   
   return $self;
 }
@@ -46,10 +45,7 @@ sub close(){
  
 =cut
 sub identifier(){
-  my $self = shift or die "We need a Reference";
-  
-  #for now we just use the filehandle
-  return $self->{m_handle}->fh;
+  die "This function is virtual, it needs to be implemented in the subclass";  
 }
 
 
