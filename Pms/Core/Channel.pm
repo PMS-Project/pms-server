@@ -61,7 +61,7 @@ sub addConnection (){
     return;
   }
   
-  my $stuff= { "eventguard" => $connection->connect("disconnect" => $self->_disconnectCallback()),
+  my $stuff= { "eventguard" => $connection->connect("disconnect" => $self->_disconnectCallback(),"change_username" => $self->_changeUsernameCallback()),
                "object"     => $connection
   };
   
@@ -75,6 +75,17 @@ sub _disconnectCallback(){
   return sub{
     my $connection = shift;
     $self->removeConnection($connection);
+  }
+}
+
+sub _changeUsernameCallback(){
+  my $self = shift;
+  return sub{
+    my $connection = shift;
+    my $oldname = shift;
+    my $newname = shift;
+    
+    $self->sendChannelMessage("User ".$oldname." is now named ".$newname);
   }
 }
 

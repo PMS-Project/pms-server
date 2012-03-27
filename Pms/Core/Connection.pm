@@ -9,7 +9,9 @@ our @ISA = qw(Pms::Core::Object);
 
 our %PmsEvents = ('dataAvailable' => 1,
                   'disconnect' => 1,
-                  'error' => 1);
+                  'error' => 1,
+                  'change_username' => 1
+                 );
 
 sub new (){
   my $class = shift;
@@ -123,7 +125,13 @@ sub postMessage(){
  
 =cut
 sub setUsername(){
-  $_[0]->{m_user} = $_[1];
+  my $self = shift or die "Need Ref";
+  my $name = shift or die "Need Name";
+  my $oldname = $self->{m_user};
+  
+  
+  $self->{m_user} = $name;
+  $self->emitSignal(change_username => $oldname,$name);
 }
 
 =begin nd

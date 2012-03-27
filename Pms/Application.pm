@@ -83,7 +83,8 @@ sub new (){
                                    'join' => $self->_joinChannelCallback(),
                                    'leave' => $self->_leaveChannelCallback(),
                                    'create' => $self->_createChannelCallback(),
-                                   'list' => $self->_listChannelCallback()
+                                   'list' => $self->_listChannelCallback(),
+                                   'nick' => $self->_changeNickCallback()
                                   );
 
   return $self;
@@ -218,9 +219,14 @@ sub _sendCommandCallback (){
   return sub{
     my $connection = shift;
     my $channel = shift;
-    my $message = shift;        
+    my $message = shift; 
     
-    if(!defined $connection || !defined $channel || !defined $message){
+    if(!defined $connection){
+      #TODO add some error handling
+      return;
+    }
+    
+    if(!defined $channel || !defined $message){
       $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for send command\"");
       return;
     }
@@ -259,7 +265,12 @@ sub _createChannelCallback(){
     my $connection = shift;
     my $channel    = shift;
     
-    if(!defined $connection || !defined $channel){
+    if(!defined $connection){
+      #TODO add some error handling
+      return;
+    }
+    
+    if(!defined $channel){
       $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for createChannel command\"");
       return;
     }
@@ -299,8 +310,13 @@ sub _joinChannelCallback (){
   return sub{
     my $connection = shift;
     my $channel = shift;
+    
+    if(!defined $connection){
+      #TODO add some error handling
+      return;
+    }
 
-    if(!defined $connection || !defined $channel){
+    if(!defined $channel){
       $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for join command\"");
       return;
     }
@@ -331,7 +347,12 @@ sub _leaveChannelCallback (){
     my $connection = shift;
     my $channel = shift;
     
-    if(!defined $connection || !defined $channel){
+    if(!defined $connection){
+      #TODO add some error handling
+      return;
+    }
+    
+    if(!defined $channel){
       $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for leave command\"");
       return;
     }
@@ -351,11 +372,47 @@ sub _listChannelCallback (){
 
   return sub{
     my $connection = shift;
+    
+    if(!defined $connection){
+      #TODO add some error handling
+      return;
+    }
 
     $connection->postMessage("/message \"default\" \"Available channels:\"");
     foreach(keys %{ $self->{m_channels} }){
       $connection->postMessage("/message \"default\" \"$_\"");
     }
+  }
+}
+
+sub _changeNickCallback (){
+  my $self = shift or die "Need Ref";
+  
+  return sub{
+    my $connection = shift;
+    my $newname = shift;
+    if(!defined $connection){
+      #TODO add some error handling
+      return;
+    }
+    
+    if(!defined $newname){
+      $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for nick command\"");
+      return;     
+    }
+    
+    if($newname eq $connection->username()){
+      return;
+    }
+    
+    if(!defined $self->{m_users}->{$newname}){
+      delete $self->{m_users}->{$connection->username()};
+      $self->{m_users}->{$newname} = $connection;
+      $connection->setUsername($newname);
+    }else{
+      $connection->postMessage("/serverMessage \"default\" \"User $newname already exists\"");
+    }
+    
   }
 }
 
