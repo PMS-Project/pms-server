@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w 
 =begin nd
   
-  Package: Pms::Prot::WebSock
+  Package: Pms::Prot::WebSocket::Protocol
 
   Package handles parsing and validation
   of netstrings which is the stream protocol 

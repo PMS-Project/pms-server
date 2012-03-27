@@ -281,14 +281,14 @@ sub _createChannelCallback(){
     }
     
     if(defined $self->{m_channels}{$channel}){
-      $connection->postMessage("/serverMessage \"default\" \"Channel ".$channel." already exists\"");
+      $connection->postMessage("/serverMessage \"default\" \"Channel $channel already exists\"");
       return;
     }
     
     my $event = Pms::Event::Channel->new($connection,$channel);
     $self->emitSignal(about_to_create_channel => $event);
     if($event->wasRejected()){
-      $connection->postMessage("/serverMessage \"default\" \"Can not create the channel: ".$channel." Reason: ".$event->reason()."\"");
+      $connection->postMessage("/serverMessage \"default\" \"Can not create the channel: $channel Reason: $event->reason()\"");
       return;
     }
     
