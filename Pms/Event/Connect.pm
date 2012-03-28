@@ -15,4 +15,9 @@ sub new(){
   $self->{m_ip} = undef;
   return $self;
 }
+
+sub connection(){
+  my $self = shift;
+  return $self->{m_connection};
+}
 1;

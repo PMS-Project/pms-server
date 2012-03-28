@@ -14,6 +14,7 @@ use Pms::Event::Message;
 use Pms::Event::Channel;
 use Pms::Event::Join;
 use Pms::Event::Leave;
+use Pms::Event::NickChange;
 
 use Pms::Prot::Parser;
 use Pms::Core::Connection;
@@ -36,7 +37,10 @@ our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a ne
                  , 'leave_channel_success' => 1     # A connected user left a channel
                  , 'create_channel_request' => 1       # A user tries to create a new channel
                  , 'create_channel_success' => 1       # A new channel was created on the server 
-                 , 'channel_close_success' => 1);      # A channel was deleted/closed
+                 , 'channel_close_success' => 1      # A channel was deleted/closed
+                 , 'change_nick_request' => 1        # A user tries to change his nickname
+                 , 'change_nick_success' => 1        # A user has changed his nickname
+                 );
   
 sub new (){
   my $class = shift;
@@ -142,7 +146,7 @@ sub _newConnectionCallback(){
       my $ident = $connection->identifier();
       
       my $event = Pms::Event::Connect->new($connection);
-      $self->emitSignal('client_connect_success' => $event);
+      $self->emitSignal('client_connect_request' => $event);
     
       if($event->wasRejected()){
         warn "Connection was rejected, reason: ".$event->reason();
@@ -162,14 +166,17 @@ sub _newConnectionCallback(){
       $self->{m_connections}->{ $ident } = $connection;
       $self->{m_users}->{$user.$cnt} = $connection;
       
-      #check if there is data available already
-      if($connection->messagesAvailable()){
-        $self->{m_dataAvailCallback}->($connection);
-      }
       #register to connection events
       $connection->connect(dataAvailable => $self->{m_dataAvailCallback},
                            disconnect    => $self->{m_clientDisconnectCallback}
       );
+      warn "Muhlaman";
+      $self->emitSignal('client_connect_success' => $event);
+      warn "After Muhlaman";
+      #check if there is data available already
+      #if($connection->messagesAvailable()){
+      #  $self->{m_dataAvailCallback}->($connection);
+      #}
     }
   }
 }
@@ -327,7 +334,7 @@ sub _joinChannelCallback (){
     }
 
     my $event = Pms::Event::Join->new($connection,$channel);
-    $self->emitSignal('join_channel_success' => $event);
+    $self->emitSignal('join_channel_request' => $event);
 
     if($event->wasRejected()){
       if($Debug){
@@ -339,6 +346,7 @@ sub _joinChannelCallback (){
 
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->addConnection($connection);
+      $self->emitSignal('join_channel_success' => $event);
     }else{
       $connection->postMessage("/serverMessage \"default\" \"Channel ".$channel." does not exist\" ");
     }
@@ -410,10 +418,23 @@ sub _changeNickCallback (){
       return;
     }
     
+    my $event = Pms::Event::NickChange->new($connection,$connection->username(),$newname);
+    $self->emitSignal('change_nick_request' => $event);
+
+    if($event->wasRejected()){
+      if($Debug){
+        warn "Nick was rejected, reason: ".$event->reason();
+      }
+      $connection->postMessage("/serverMessage \"default\" \"Nick rejected: ".$event->reason()."\" ");
+      return;
+    }
+    
     if(!defined $self->{m_users}->{$newname}){
       delete $self->{m_users}->{$connection->username()};
       $self->{m_users}->{$newname} = $connection;
       $connection->setUsername($newname);
+      
+      $self->emitSignal('change_nick_success' => $event);
     }else{
       $connection->postMessage("/serverMessage \"default\" \"User $newname already exists\"");
     }

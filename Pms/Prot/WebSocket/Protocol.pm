@@ -81,6 +81,41 @@ sub _netstringify {
   return $netstring;
 }
 
+AnyEvent::Handle::register_read_type websock_handshake => sub{
+  my $hdl = shift;
+  my $cb  = shift; 
+  
+  sub{
+    my $chunk = $hdl->{rbuf};
+    if(!defined $chunk){
+      return;
+    }
+
+    $hdl->{rbuf} = undef;
+    my $hs    = $hdl->{pmsWebSockSrv};
+    my $frame = $hdl->{pmsWebSockFrame};
+    if(!defined $hs){
+      $hdl->{pmsWebSockSrv} = $hs = Protocol::WebSocket::Handshake::Server->new();
+      $hdl->{pmsWebSockFrame} = $frame = Protocol::WebSocket::Frame->new();
+    }
+
+    $hdl->{pmsReadError} = undef; #remove last error
+
+    if (!$hs->is_done) {
+      #this will append to its internal buffer until handshake is done
+      $hs->parse($chunk);
+
+      if ($hs->is_done) {
+        #warn "Handshake done";
+        $hdl->push_write($hs->to_string);
+        $cb->($hdl,undef);
+        return 1;
+      }
+      return undef;
+    }
+  }
+};
+
 AnyEvent::Handle::register_read_type websock_pms => sub{
   my $hdl = shift;
   my $cb  = shift;
@@ -97,24 +132,13 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
     $hdl->{rbuf} = undef;
     my $hs    = $hdl->{pmsWebSockSrv};
     my $frame = $hdl->{pmsWebSockFrame};
-    if(!defined $hs){
-      $hdl->{pmsWebSockSrv} = $hs = Protocol::WebSocket::Handshake::Server->new();
-      $hdl->{pmsWebSockFrame} = $frame = Protocol::WebSocket::Frame->new();
+    if(!defined $hs || !$hs->is_done){
+         $hdl->{pmsReadError} = "Handshake is not done";
+         $_[0]->_error (Errno::EBADMSG);
+         return;
     }
     
     $hdl->{pmsReadError} = undef; #remove last error
-  
-    if (!$hs->is_done) {
-      #this will append to its internal buffer until handshake is done
-      $hs->parse($chunk);
-    
-      if ($hs->is_done) {
-        #warn "Handshake done";
-        $hdl->push_write($hs->to_string);
-      }
-      return undef;
-    }
-    
     
     #If we enter this Path the handshake is done and we can read the Frame
     $frame->append($chunk);

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Pms::Event::Message;
+package Pms::Event::NickChange;
 
 use strict;
 use Pms::Event::Event;
@@ -12,8 +12,8 @@ sub new(){
   bless($self,$class);
   
   $self->{m_connection} = shift;
-  $self->{m_channel}    = shift;
-  $self->{m_message}    = shift;
+  $self->{m_oldname}    = shift;
+  $self->{m_newname}    = shift;
   return $self;
 }
 1;

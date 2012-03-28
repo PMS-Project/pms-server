@@ -26,7 +26,7 @@ sub initialize (){
   my $self = shift;
   warn "Registering Events";  
   $self->{m_eventGuard} = $self->{m_parent}->connect( 
-    client_connected => sub{
+    client_connect_request => sub{
       my $eventChain = shift;
       my $eventType  = shift;
       warn "Hello from Module";
@@ -34,7 +34,7 @@ sub initialize (){
       #$eventType->reject("Connection Rejected because you suck\n");
       #$eventChain->stop_event;
       
-    }, client_connected => sub 
+    }, client_connect_success => sub 
     { 
       warn "We received a new Connection";
     }
