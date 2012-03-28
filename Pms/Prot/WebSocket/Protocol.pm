@@ -30,6 +30,7 @@ use Protocol::WebSocket::Handshake::Server;
 use Protocol::WebSocket::Frame;
 use AnyEvent::Handle;
 
+our $Debug = $ENV{'PMS_DEBUG'};
 
 sub _parseNetString {
   my $handle = shift;
@@ -77,7 +78,9 @@ sub _parseNetString {
 sub _netstringify {
   my $value = shift;
   my $netstring = length($value).":".$value.","; 
-  warn "Sending netstring: ".$netstring;
+  if($Debug){
+    warn "Sending netstring: ".$netstring;
+  }
   return $netstring;
 }
 
@@ -168,7 +171,9 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
 };
 
 AnyEvent::Handle::register_write_type websock_pms => sub {
-  warn "Writing Websocket";
+  if($Debug){
+    warn "Writing Websocket";
+  }
   my $handle = shift;
   my $frame  = Protocol::WebSocket::Frame->new(_netstringify(shift));
   $handle->push_write($frame->to_bytes);

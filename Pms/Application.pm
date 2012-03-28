@@ -170,13 +170,13 @@ sub _newConnectionCallback(){
       $connection->connect(dataAvailable => $self->{m_dataAvailCallback},
                            disconnect    => $self->{m_clientDisconnectCallback}
       );
-      warn "Muhlaman";
+
       $self->emitSignal('client_connect_success' => $event);
-      warn "After Muhlaman";
+      
       #check if there is data available already
-      #if($connection->messagesAvailable()){
-      #  $self->{m_dataAvailCallback}->($connection);
-      #}
+      if($connection->messagesAvailable()){
+        $self->{m_dataAvailCallback}->($connection);
+      }
     }
   }
 }
@@ -187,7 +187,7 @@ sub _dataAvailableCallback (){
         my ($connection) = @_;
         while($connection->messagesAvailable()){
           my $message = $connection->nextMessage();
-          warn "Reveived Message: ".$message;
+          warn "Reveived Message: ".$message if($Debug);
           
           my %command = $self->{m_parser}->parseMessage($message);
           if(keys %command){
@@ -211,12 +211,12 @@ sub _clientDisconnectCallback (){
 }
 
 sub invokeCommand() {
-  warn "@_";
+  warn "@_" if($Debug);
   my ($self,$connection,%command) = @_;
   
   #first try to invoke build in commands
   if(exists $self->{m_buildinCommands}{$command{'name'}}){
-    warn "Invoking Command: ".$command{'name'};
+    warn "Invoking Command: ".$command{'name'} if($Debug);;
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
     $self->{m_buildinCommands}->{$command{'name'}}->( $connection,@args );

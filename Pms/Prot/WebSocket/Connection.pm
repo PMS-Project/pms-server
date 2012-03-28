@@ -5,6 +5,7 @@ use Pms::Core::Connection;
 use Pms::Prot::WebSocket::Protocol;
 use strict;
 
+our $Debug = $ENV{'PMS_DEBUG'};
 our @ISA = qw(Pms::Core::Connection);
 our %PmsEvents = ('handshake_done' => 1);
 
@@ -41,14 +42,16 @@ sub _initializeHandle(){
                             on_eof   => $self->_onEofCallback());
   
   #initialize the websocket handshake
-  warn "Starting Handshake";
+  warn "Starting Handshake" if($Debug);
   $self->{m_handle}->push_read(websock_handshake => $self->_onHandshakeFinished());
 }
 
 sub _onHandshakeFinished(){
   my $self = shift;
   return sub{
-    warn "Handshake is done";
+    if($Debug){
+      warn "Handshake is done";
+    }
     
     #start the automatic reading
     my @start_request; @start_request = (websock_pms => sub{
@@ -56,7 +59,7 @@ sub _onHandshakeFinished(){
       $self->_readyRead(@_);
       
       # push next request read
-      warn "Pushing new Read Request";
+      warn "Pushing new Read Request" if($Debug);
       $handle->push_read(@start_request);
     }); 
     $self->{m_handle}->push_read(@start_request);
