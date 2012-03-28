@@ -383,9 +383,9 @@ sub _listChannelCallback (){
       return;
     }
 
-    $connection->postMessage("/message \"default\" \"Available channels:\"");
+    $connection->postMessage("/serverMessage \"default\" \"Available channels:\"");
     foreach(keys %{ $self->{m_channels} }){
-      $connection->postMessage("/message \"default\" \"$_\"");
+      $connection->postMessage("/serverMessage \"default\" \"$_\"");
     }
   }
 }
