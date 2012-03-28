@@ -26,14 +26,17 @@ our @ISA = qw(Pms::Core::Object);
 
 our $Debug = $ENV{'PMS_DEBUG'};
 
-our %PmsEvents = ( 'client_connected' => 1      # Event is fired if a new Client connects to the server
-                 , 'client_disconnected' => 1   # Any client closed the connection
-                 , 'new_message' => 1           # Any client sent a message to any channel
-                 , 'user_entered_channel' => 1  # A connected user entered a channel
-                 , 'user_left_channel' => 1     # A connected user left a channel
-                 , 'about_to_create_channel' => 1       # A user tries to create a new channel
-                 , 'channel_created' => 1       # A new channel was created on the server 
-                 , 'channel_closed' => 1);      # A channel was deleted/closed
+our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a new Client tries to connect to the server
+                 , 'client_connect_success' => 1        # Event is fired if a new Client connects to the server
+                 , 'client_disconnect_success' => 1     # Any client closed the connection
+                 , 'message_send_request' => 1          # Any client asks if he can send a message to any channel
+                 , 'message_send_success' => 1              # Any client has sent a message to any channel
+                 , 'join_channel_request' => 1          # User requests to join a channel
+                 , 'join_channel_success' => 1           # A connected user entered a channel
+                 , 'leave_channel_success' => 1     # A connected user left a channel
+                 , 'create_channel_request' => 1       # A user tries to create a new channel
+                 , 'create_channel_success' => 1       # A new channel was created on the server 
+                 , 'channel_close_success' => 1);      # A channel was deleted/closed
   
 sub new (){
   my $class = shift;
@@ -139,7 +142,7 @@ sub _newConnectionCallback(){
       my $ident = $connection->identifier();
       
       my $event = Pms::Event::Connect->new($connection);
-      $self->emitSignal('client_connected' => $event);
+      $self->emitSignal('client_connect_success' => $event);
     
       if($event->wasRejected()){
         warn "Connection was rejected, reason: ".$event->reason();
@@ -240,7 +243,7 @@ sub _sendCommandCallback (){
     
     #TODO put who and when in the event
     my $event = Pms::Event::Message->new($connection,$channel,$message);
-    $self->emitSignal('new_message' => $event);
+    $self->emitSignal('message_send_request' => $event);
     
     if($event->wasRejected()){
       if($Debug){
@@ -255,6 +258,8 @@ sub _sendCommandCallback (){
     }else{
       $self->{m_channels}->{$channel}->sendMessage($who,$when,$message);
     }
+    
+    $self->emitSignal('message_send_success' => $event);
   }
 }
 
@@ -286,7 +291,7 @@ sub _createChannelCallback(){
     }
     
     my $event = Pms::Event::Channel->new($connection,$channel);
-    $self->emitSignal(about_to_create_channel => $event);
+    $self->emitSignal(create_channel_request => $event);
     if($event->wasRejected()){
       $connection->postMessage("/serverMessage \"default\" \"Can not create the channel: $channel Reason: $event->reason()\"");
       return;
@@ -299,7 +304,7 @@ sub _createChannelCallback(){
     
     #tell all modules the channel was created
     $event = new Pms::Event::Channel($connection,$channel);
-    $self->emitSignal(channel_created => $event);
+    $self->emitSignal(create_channel_success => $event);
     
   }
 }
@@ -322,7 +327,7 @@ sub _joinChannelCallback (){
     }
 
     my $event = Pms::Event::Join->new($connection,$channel);
-    $self->emitSignal('user_entered_channel' => $event);
+    $self->emitSignal('join_channel_success' => $event);
 
     if($event->wasRejected()){
       if($Debug){
@@ -358,7 +363,7 @@ sub _leaveChannelCallback (){
     }
     
     my $event = Pms::Event::Leave->new($connection,$channel);
-    $self->emitSignal('user_left_channel' => $event);
+    $self->emitSignal('leave_channel_success' => $event);
     
     if(defined $self->{m_channels}{$channel}){
       $self->{m_channels}{$channel}->removeConnection($connection);
@@ -420,6 +425,8 @@ sub registerCommand (){
   my $self = shift;
   my $command = shift;
   my $cb = shift;
+  
+  
   
   if(!exists $self->{m_commands}->{$command}){
     $self->{m_commands}->{$command} = $cb;
