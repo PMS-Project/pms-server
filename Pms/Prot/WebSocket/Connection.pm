@@ -71,7 +71,7 @@ sub _onErrorCallback(){
   my $self = shift;
   
   return sub{
-    warn "EEEET EEEET error $_[2]";
+    warn "Websocket Error Closing Connection: $_[2]";
     $self->emitSignal('error');
     
     $self->emitSignal('disconnect');

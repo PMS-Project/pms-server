@@ -36,7 +36,10 @@ sub _newConnectionCallback(){
     
     my $hash = {
       connectionObject => $connection,
-      eventGuard       => $connection->connect('handshake_done' => $self->_handshakeDoneCallback())
+      eventGuard       => $connection->connect(
+        'handshake_done' => $self->_handshakeDoneCallback(),
+        'disconnect'     => $self->_disconnectWhileHandshake()                                      
+      )
     };
     
     $self->{m_pendingConnections}->{$connection->identifier()} = $hash;
@@ -61,6 +64,24 @@ sub _handshakeDoneCallback(){
     $self->emitSignal('connectionAvailable');
     
   }
+}
+
+sub _disconnectWhileHandshake(){
+ my $self = shift;
+  
+  return sub{
+    my $connection = shift;
+    my $ident = $connection->identifier();
+    
+    warn "Connection closed while Handshake still in progress";
+    
+    if(!defined $self->{m_pendingConnections}->{$ident}){
+      die "Connection not known in pending Connections";
+    }
+   
+    $connection->disconnect($self->{m_pendingConnections}->{$ident}->{eventGuard});
+    delete $self->{m_pendingConnections}->{$ident};
+  }  
 }
 
 1;
