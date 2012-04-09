@@ -109,4 +109,17 @@ sub removeConnection() {
   
   $self->sendChannelMessage("Client ".$connection->username()." disconnected");
 }
+
+sub userList() {
+  my $self = shift or die "Need Ref";
+  my @list;
+  
+  foreach my $k (keys %{$self->{m_connections}}){
+    if(defined($self->{m_connections}->{$k})){
+       push(@list,$self->_connectionForIdent($k)->username());
+    }    
+  }
+  
+  return @list;
+}
 1;

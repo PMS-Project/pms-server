@@ -89,7 +89,8 @@ sub new (){
                                    'leave' => $self->_leaveChannelCallback(),
                                    'create' => $self->_createChannelCallback(),
                                    'list' => $self->_listChannelCallback(),
-                                   'nick' => $self->_changeNickCallback()
+                                   'nick' => $self->_changeNickCallback(),
+                                   'users' => $self->_listUsersCallback()
                                   );
 
   return $self;
@@ -142,7 +143,7 @@ sub createUniqueNickname (){
       while(exists($self->{m_users}->{$user.$cnt})){
         $cnt+=1;
       }
-      return $user;
+      return ($user.$cnt);
 }
 
 =begin nd
@@ -574,5 +575,30 @@ sub _changeNickCallback (){
     }  
   }
 }
+
+sub _listUsersCallback(){
+  my $self = shift or die "Need Ref";
+  
+  return sub{
+    my $connection = shift;
+    my $channel = shift;
+    
+    if(!defined $channel){
+      $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for users command\"");
+      return;
+    }
+    
+    if(!defined $self->{m_channels}->{$channel}){
+      $connection->postMessage("/serverMessage \"default\" \"No such channel\"");
+      return;
+    }
+    
+    my @users = $self->{m_channels}->{$channel}->userList();
+    foreach my $curr (@users){
+      $connection->postMessage("/serverMessage \"$channel\" \"$curr\"");
+    }
+  }
+}
+
 
 1;
