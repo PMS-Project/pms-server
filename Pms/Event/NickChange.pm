@@ -16,4 +16,14 @@ sub new(){
   $self->{m_newname}    = shift;
   return $self;
 }
+
+sub newName (){
+  my $self = shift or die "Need Ref";
+  return $self->{m_newname};
+}
+
+sub oldName (){
+  my $self = shift or die "Need Ref";
+  return $self->{m_oldname};
+}
 1;

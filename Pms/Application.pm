@@ -73,17 +73,15 @@ sub new (){
   $self->{m_timers}   = [];
   $self->{m_clients}  = [];
   $self->{m_modules}  = [];
-  $self->{m_commands} = [];
+  $self->{m_commands}    = {};
   $self->{m_connections} = {};
   $self->{m_users}       = {}; #users to connection map
-  $self->{m_channels} = {};
-  $self->{m_parser}   = Pms::Prot::Parser->new();
+  $self->{m_channels}    = {};
+  $self->{m_lastError}   = undef;
+  $self->{m_parser}      = Pms::Prot::Parser->new();
   $self->{m_connectionProvider} = undef;
   $self->{m_dataAvailCallback} = $self->_dataAvailableCallback();
   $self->{m_clientDisconnectCallback} = $self->_clientDisconnectCallback();
-  
-  $self->{m_channels}{"Test"} = Pms::Core::Channel->new($self,"Test");
-  
   
   #build in commands:
   %{$self->{m_buildinCommands}} = ('send' => $self->_sendCommandCallback(),
@@ -126,11 +124,137 @@ sub loadModules (){
   closedir $dir;  
 }
 
+=begin nd
+  Function: createUniqueNickname
+    Creates and returns a Nickname that does not yet exist on the server
+  
+  Access:
+    Public
+    
+  Returns:
+    The new nickname
+=cut
+sub createUniqueNickname (){
+      my $self = shift or die "Need Ref";
+      #TODO maybe use timestamp for generic username
+      my $user = "User";
+      my $cnt  = 0;
+      while(exists($self->{m_users}->{$user.$cnt})){
+        $cnt+=1;
+      }
+      return $user;
+}
+
+=begin nd
+  Function: nicknameToConnection
+    Creates and returns a Nickname that does not yet exist on the server
+  
+  Access:
+    Public
+    
+  Parameters:
+    $nickname - The nickname we are looking for
+    
+  Returns:
+    The connection associated with the nickname or undef if none exists
+=cut
+sub nicknameToConnection (){
+  my $self = shift or die "Need Ref";
+  my $nick = shift or die "Need Nickname";
+  
+  if(defined $self->{m_users}->{$nick}){
+    return $self->{m_users}->{$nick};
+  }
+  return undef;
+}
+
+=begin nd
+  Function: changeNick
+    Changes the Nick of a connected User
+    
+  Note:
+    changeNick will not send a change_nick_request event , 
+    this has to be done by the caller
+  
+  Access:
+    Public
+    
+  Parameters:
+    $connection - The User connection Object
+    $newNick    - The New Nickname 
+    $force      - If the nick already exists , force the change (optional, default value is false)
+    
+  Returns:
+    0 - for failed
+    1 - for success
+=cut
+sub changeNick (){
+  my $self = shift or die "Need Ref";
+  my $connection = shift or die "Need Connection Object";
+  my $newNick    = shift or die "Need a new Nick Argument";
+  my $force      = shift;
+  if(!defined $force){
+    warn "Setting force to 0";
+    $force = 0;
+  }
+  
+  $self->{m_lastError} = undef;
+  
+  #already the correct nick -> ignore it
+  if($newNick eq $connection->username()){
+      return;
+  } 
+  
+  if(defined $self->{m_users}->{$newNick}){
+    #If the nick already exists and force is set to 1 we have to rename a other connection
+    #to set the nickname
+    if($force == 1){
+        my $newname = $self->createUniqueNickname();
+        my $otherConnection = $self->nicknameToConnection($newNick);
+        
+        my $event = Pms::Event::NickChange->new($otherConnection,$otherConnection->username(),$newname);
+        
+        delete $self->{m_users}->{$otherConnection->username()};
+        $self->{m_users}->{$newname} = $otherConnection;
+        $otherConnection->setUsername($newname);
+        
+        #tell the modules we changed a nick
+        $self->emitSignal('change_nick_success' => $event);     
+    }else{
+      $self->{m_lastError} = "User $newNick already exists";
+      return 0;
+    }
+  }
+  
+  #do the actual nick change
+  my $event = Pms::Event::NickChange->new($connection,$connection->username(),$newNick);
+  
+  delete $self->{m_users}->{$connection->username()};
+  $self->{m_users}->{$newNick} = $connection;
+  $connection->setUsername($newNick);
+      
+  $self->emitSignal('change_nick_success' => $event);
+  
+  return 1; #success
+}
+
+sub registerCommand (){
+  my $self = shift;
+  my $command = shift;
+  my $cb = shift;
+  
+  if(!exists $self->{m_commands}->{$command}){
+    $self->{m_commands}->{$command} = $cb;
+    return;
+  }
+  warn "Command ".$command." already exists, did not register it"; 
+}
+
 sub _termSignalCallback(){
   my $self = shift;
   return sub {
     warn "Received TERM Signal\n";
-    $PmsApplication::self{m_eventLoop}->send; #Exit from Eventloop
+    $self->{m_eventLoop}->send; #Exit from Eventloop
   }  
 }
 
@@ -155,16 +279,11 @@ sub _newConnectionCallback(){
         next;
       }
       
-      #TODO maybe use timestamp for generic username
-      my $user = "User";
-      my $cnt  = 0;
-      while(exists($self->{m_users}->{$user.$cnt})){
-        $cnt+=1;
-      }
+      my $username = $self->createUniqueNickname();
       
-      $connection->setUsername($user.$cnt);
+      $connection->setUsername($username);
       $self->{m_connections}->{ $ident } = $connection;
-      $self->{m_users}->{$user.$cnt} = $connection;
+      $self->{m_users}->{$username} = $connection;
       
       #register to connection events
       $connection->connect(dataAvailable => $self->{m_dataAvailCallback},
@@ -215,11 +334,19 @@ sub invokeCommand() {
   my ($self,$connection,%command) = @_;
   
   #first try to invoke build in commands
-  if(exists $self->{m_buildinCommands}{$command{'name'}}){
-    warn "Invoking Command: ".$command{'name'} if($Debug);;
+  if(exists $self->{m_buildinCommands}->{$command{'name'}}){
+    warn "Invoking Command: ".$command{'name'} if($Debug);
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
     $self->{m_buildinCommands}->{$command{'name'}}->( $connection,@args );
+  }
+  
+  #now try the registered
+  if(exists $self->{m_commands}->{$command{'name'}}){
+    warn "Invoking Custom Command: ".$command{'name'} if($Debug);
+    #command hash contains a reference to the arguments array
+    my @args = @{$command{'args'}};
+    $self->{m_commands}->{$command{'name'}}->( $connection,@args );
   }
 }
 
@@ -288,7 +415,7 @@ sub _createChannelCallback(){
     }
 
     if($channel =~ m/[^\d\w]+/){
-      $connection->postMessage("/message \"default\" \"Channelname can only contain digits and word characters\"");
+      $connection->postMessage("/message \"default\" \"Channelname can only contain digits and letters\"");
       return;
     }
     
@@ -351,6 +478,18 @@ sub _joinChannelCallback (){
       $connection->postMessage("/serverMessage \"default\" \"Channel ".$channel." does not exist\" ");
     }
   }
+}
+
+sub registerCommand (){
+  my $self = shift;
+  my $command = shift;
+  my $cb = shift;
+  
+  if(!exists $self->{m_commands}->{$command}){
+    $self->{m_commands}->{$command} = $cb;
+    return;
+  }
+  warn "Command ".$command." already exists, did not register it"; 
 }
 
 sub _leaveChannelCallback (){
@@ -429,32 +568,11 @@ sub _changeNickCallback (){
       return;
     }
     
-    if(!defined $self->{m_users}->{$newname}){
-      delete $self->{m_users}->{$connection->username()};
-      $self->{m_users}->{$newname} = $connection;
-      $connection->setUsername($newname);
-      
-      $self->emitSignal('change_nick_success' => $event);
-    }else{
-      $connection->postMessage("/serverMessage \"default\" \"User $newname already exists\"");
-    }
-    
+    if($self->changeNick($connection,$newname) == 0){
+      #a error happened
+      $connection->postMessage("/serverMessage \"default\" \"$self->{m_lastError}\"");
+    }  
   }
 }
-
-sub registerCommand (){
-  my $self = shift;
-  my $command = shift;
-  my $cb = shift;
-  
-  
-  
-  if(!exists $self->{m_commands}->{$command}){
-    $self->{m_commands}->{$command} = $cb;
-    return;
-  }
-  warn "Command ".$command." already exists, did not register it"; 
-}
-
 
 1;
