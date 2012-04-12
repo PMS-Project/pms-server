@@ -486,18 +486,6 @@ sub _joinChannelCallback (){
   }
 }
 
-sub registerCommand (){
-  my $self = shift;
-  my $command = shift;
-  my $cb = shift;
-  
-  if(!exists $self->{m_commands}->{$command}){
-    $self->{m_commands}->{$command} = $cb;
-    return;
-  }
-  warn "Command ".$command." already exists, did not register it"; 
-}
-
 sub _leaveChannelCallback (){
   my $self = shift or die "Need Ref";
   
