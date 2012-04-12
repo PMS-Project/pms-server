@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w 
-package Pms::Prot::WebSocket::Connection;
+package Pms::Net::WebSocket::Connection;
 
 use Pms::Core::Connection;
-use Pms::Prot::WebSocket::Protocol;
+use Pms::Net::WebSocket::Backend;
 use strict;
 
 our $Debug = $ENV{'PMS_DEBUG'};

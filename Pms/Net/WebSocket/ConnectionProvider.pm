@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w 
 
-package Pms::Prot::WebSocket::ConnectionProvider;
+package Pms::Net::WebSocket::ConnectionProvider;
 
 use strict;
 use Pms::Core::ConnectionProvider;
-use Pms::Prot::WebSocket::Connection;
+use Pms::Net::WebSocket::Connection;
 
 use AnyEvent;
 use AnyEvent::Handle;
@@ -32,7 +32,7 @@ sub _newConnectionCallback(){
   return sub{
     my ($fh, $host, $port) = @_;
     
-    my $connection = Pms::Prot::WebSocket::Connection->new($fh,$host,$port);
+    my $connection = Pms::Net::WebSocket::Connection->new($fh,$host,$port);
     
     my $hash = {
       connectionObject => $connection,

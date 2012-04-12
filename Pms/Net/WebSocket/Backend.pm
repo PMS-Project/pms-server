@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w 
 =begin nd
   
-  Package: Pms::Prot::WebSocket::Protocol
+  Package: Pms::Net::WebSocket::Protocol
 
   Package handles parsing and validation
   of netstrings which is the stream protocol 
@@ -23,66 +23,17 @@
 
 =cut
 
-package Pms::Prot::WebSocket::Protocol;
+package Pms::Net::WebSocket::Backend;
 
 use strict;
 use Protocol::WebSocket::Handshake::Server;
 use Protocol::WebSocket::Frame;
 use AnyEvent::Handle;
+use Pms::Prot::Netstring;
 
 our $Debug = $ENV{'PMS_DEBUG'};
 
-sub _parseNetString {
-  my $handle = shift;
-  my $buffer = \$handle->{pmsReadBuf};
-  
-  if(!length($$buffer)){
-    return undef;
-  }
-  
-  #TODO this will fail if we got only the first few numbers of the netstring
-  #but did not receive the delimiter
-  #warn $$buffer;
-  #warn " buffer len: ".length($$buffer);
-  if($$buffer =~ m/^[0-9]+:/){
-    my $delim = index($$buffer,':');
-    if($delim < 0){
-      #warn "No delim";
-      return undef;
-    }
-    
-    my $len = substr($$buffer,0,$delim); #copy length from buffer
-    #warn "Read len: ".$len;
-    #warn "netstring len: ".($len+$delim+1+1)." buffer len: ".length($$buffer);
-    if(length($$buffer) < ($len+$delim+1+1)){
-      #warn "Too short";
-      return undef; #not enough data
-    }
-    
-    substr($$buffer,0,$delim+1,'');  #remove length and : from the beginning
-    my $value = substr($$buffer,0,$len,''); #remove data from the buffer
-    if(substr($$buffer,0,1,'') ne ','){ #check for last character to be a ,
-      #warn "Error";
-      $handle->{pmsReadError} = "Invalid Netstring";
-      return undef;
-    }
-      
-    #warn "Received Netstring ".$value."\n";
-    return $value;
-  }
-  #warn "Regexp missed";
-  $handle->{pmsReadError} = "Invalid Netstring";
-  return undef;
-}
 
-sub _netstringify {
-  my $value = shift;
-  my $netstring = length($value).":".$value.","; 
-  if($Debug){
-    warn "Sending netstring: ".$netstring;
-  }
-  return $netstring;
-}
 
 AnyEvent::Handle::register_read_type websock_handshake => sub{
   my $hdl = shift;
@@ -157,13 +108,14 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
     
     #warn "Frames found";
     
-    my $value = _parseNetString($hdl);
+    my $value = Pms::Prot::Netstring::parse($hdl,\$hdl->{pmsReadBuf});
     if(defined $value){
       #warn "Callback";
       $cb->($hdl,$value);
       return 1; #tell the AnyEvent::Handle code that we finally have read data
     }else{
-      if(defined $hdl->{pmsReadError}){
+      if(defined $Pms::Prot::Netstring::lastError){
+         warn "Error in Websocket Read ".$Pms::Prot::Netstring::lastError;
          $_[0]->_error (Errno::EBADMSG);
       }
     }
@@ -175,7 +127,7 @@ AnyEvent::Handle::register_write_type websock_pms => sub {
     warn "Writing Websocket";
   }
   my $handle = shift;
-  my $frame  = Protocol::WebSocket::Frame->new(_netstringify(shift));
+  my $frame  = Protocol::WebSocket::Frame->new(Pms::Prot::Netstring::serialize(shift));
   $handle->push_write($frame->to_bytes);
 };
 

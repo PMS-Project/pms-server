@@ -21,7 +21,7 @@ use Pms::Core::Connection;
 use Pms::Core::ConnectionProvider;
 use Pms::Core::Channel;
 
-use Pms::Prot::WebSocket::ConnectionProvider;
+use Pms::Net::WebSocket::ConnectionProvider;
 
 our @ISA = qw(Pms::Core::Object);
 
@@ -99,7 +99,7 @@ sub new (){
 sub execute (){
   my $self = shift;
   
-  $self->{m_connectionProvider} = Pms::Prot::WebSocket::ConnectionProvider->new($self);
+  $self->{m_connectionProvider} = Pms::Net::WebSocket::ConnectionProvider->new($self);
   $self->{m_connectionProvider}->reg_cb('connectionAvailable' => $self->_newConnectionCallback());
    
   $self->loadModules();
