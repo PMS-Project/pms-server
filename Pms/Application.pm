@@ -251,6 +251,11 @@ sub registerCommand (){
   warn "Command ".$command." already exists, did not register it"; 
 }
 
+sub channels (){
+  my $self = shift or die "Need Ref";
+  return keys(%{ $self->{m_channels} });        
+}
+
 sub _termSignalCallback(){
   my $self = shift;
   return sub {

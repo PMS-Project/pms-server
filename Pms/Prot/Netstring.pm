@@ -1,3 +1,20 @@
+#!/usr/bin/perl -w 
+
+=begin nd
+  
+  Package: Pms::Prot::Netstring
+
+  Package handles parsing and validation
+  of netstrings which is the stream protocol 
+  we use for PMS.
+  
+  A Netstring looks like that:
+  *10:abcdefghij,*
+  
+  [len]:[string],
+  
+  A better documentation can be found at: http://cr.yp.to/proto/netstrings.txt
+=cut
 package Pms::Prot::Netstring;
 
 use strict;

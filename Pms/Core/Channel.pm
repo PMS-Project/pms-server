@@ -16,6 +16,11 @@ sub new (){
   return $self;
 }
 
+sub channelName (){
+  my $self = shift or die "Need Ref";
+  return $self->{m_name};
+}
+
 sub _connectionForIdent(){
   my $self = shift or die "Need Ref";
   my $key  = shift or die "Need Key";

@@ -1,26 +1,12 @@
 #!/usr/bin/perl -w 
-=begin nd
-  
-  Package: Pms::Net::WebSocket::Protocol
 
-  Package handles parsing and validation
-  of netstrings which is the stream protocol 
-  we use for PMS.
-  
-  A Netstring looks like that:
-  *10:abcdefghij,*
-  
-  [len]:[string],
-  
-  A better documentation can be found at: http://cr.yp.to/proto/netstrings.txt
+=begin nd
+  Package: Pms::Net::WebSocket::Backend
   
   To use the code in the Package it just has to be imported. It will automatically
   register read and write functions to AnyEvent::Handle so we don't have to care
   about how the Handles internally read the Packages from the Socket.
   That makes it easy to plug in another Protocol easily.
-  
-  All Functions are private.
-
 =cut
 
 package Pms::Net::WebSocket::Backend;
