@@ -139,7 +139,7 @@ sub _loadModules{
       die "No name defined in Module";
     }    
     if(defined $curr->{requires}){
-      if(!self->isModuleLoaded($curr->{requires})){
+      if(!$self->isModuleLoaded($curr->{requires})){
         die "Module $curr->{name} requires module $curr->{requires}";
       }
     }
@@ -149,7 +149,7 @@ sub _loadModules{
     
     eval "require $name" or die "Could not load module: $name error: $@";
     my $module = $name->new($self,$curr->{config});
-    $self->{m_modules}->{$curr} = $module;
+    $self->{m_modules}->{$name} = $module;
   }
 }
 
@@ -183,7 +183,7 @@ sub getModule{
     1 for yes
     0 for no
 =cut
-sub getModule{
+sub isModuleLoaded{
   my $self = shift or die "Need Ref";
   my $fqn  = shift or die "Need FQN";
   

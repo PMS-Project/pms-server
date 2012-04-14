@@ -29,7 +29,7 @@ my @modules = (
   },
   {
     name     => "Pms::Modules::Backlog",
-    requires => undef,
+    requires => "Pms::Modules::Database",
     config   => \%baseDBHash
   },
   {
