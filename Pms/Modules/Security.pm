@@ -15,6 +15,7 @@ sub new{
   
   $self->{m_parent} = shift;
   $self->{m_eventGuard} = undef;
+  $self->{m_users} = {};
   
   $self->{m_dbh} = new AnyEvent::DBI('DBI:mysql:pms', 'pms', 'secret',
                                    on_connect  => $self->_onDbConnectCallback(),
@@ -68,6 +69,14 @@ sub _basicNickChangeCallback{
         $eventType->connection()->postMessage(Pms::Prot::Messages::serverMessage("default","Registered Nickname, use the identify command to identify yourself."));
       }else{
         $self->{m_parent}->changeNick($eventType->connection(), $eventType->newName(),1);  
+        
+        #my @arr = ("operator_role"); 
+        #$self->{m_users}  = {
+        #  roles => "identified_role",
+        #  channel_roles => {
+        #    "test" => \@arr
+        #  }
+        #};
       } 
     });
   }
