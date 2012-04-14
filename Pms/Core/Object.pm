@@ -48,7 +48,7 @@ sub connect {
     }
     
     if(!$self->_hasEvent($event)){
-      die "Unknown Signal/Event $event";
+      exit "Unknown Signal/Event $event";
     }
   }
   
@@ -65,7 +65,7 @@ sub emitSignal {
   #due to performance issues we will only check for firing events in debug mode
   if($Debug){
     if(!$self->_hasEvent($signal)){
-        die "Unknown Signal/Event $signal";
+        exit "Unknown Signal/Event $signal";
     }
   }
   

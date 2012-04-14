@@ -98,14 +98,14 @@ sub _readyRead{
 }
 
 sub postMessage{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   my $message = shift;
   
   $self->{m_handle}->push_write(websock_pms => $message);
 }
 
 sub sendMessage{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   my $message = shift;
   
   my $frame  = Protocol::WebSocket::Frame->new(Pms::Prot::WebSocket::Protocol::_netstringify( $message ));
@@ -113,12 +113,12 @@ sub sendMessage{
 }
 
 sub close{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   $self->{m_handle}->push_shutdown();
 }
 
 sub identifier{
-  my $self = shift or die "We need a Reference";
+  my $self = shift or exit "We need a Reference";
   
   #for now we just use the filehandle
   return $self->{m_handle}->fh;

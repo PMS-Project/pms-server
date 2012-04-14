@@ -14,10 +14,16 @@ sub new{
   bless ($self, $class);
   
   $self->{m_parent} = shift;
+  $self->{m_config} = shift;
   $self->{m_eventGuard} = undef;
   $self->{m_users} = {};
   
-  $self->{m_dbh} = new AnyEvent::DBI('DBI:mysql:pms', 'pms', 'secret',
+  my $host = $self->{m_config}->{db_host}     || "localhost";
+  my $db   = $self->{m_config}->{db_database} || "pms";
+  my $user = $self->{m_config}->{db_user}     || "pms";
+  my $pass = $self->{m_config}->{db_pass}     || "secret";
+  
+  $self->{m_dbh} = new AnyEvent::DBI("DBI:mysql:$db:$host", $user, $pass,
                                    on_connect  => $self->_onDbConnectCallback(),
                                    on_error    => $self->_dbErrorCallback(),
                                    exec_server => 1

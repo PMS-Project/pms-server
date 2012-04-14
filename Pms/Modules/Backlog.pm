@@ -10,6 +10,7 @@ sub new{
   bless ($self, $class);
   
   $self->{m_parent} = shift;
+  $self->{m_config} = shift;
   $self->{m_eventGuard} = undef;
   $self->initialize();
   

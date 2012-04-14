@@ -17,8 +17,15 @@ sub new{
   my $self = $class->SUPER::new(@_);
   bless($self,$class);
   
-  #TODO make possible to change from the settings file
-  $self->{m_listeningSocket} =  tcp_server(undef, 8888, $self->_newConnectionCallback());
+  $self->{m_parent} = shift;
+  $self->{m_config} = shift;
+
+  my $port = 8888;
+  if(defined $self->{m_config} && defined $self->{m_config}->{port}){
+    $port = $self->{m_config}->{port};
+  }
+  
+  $self->{m_listeningSocket} =  tcp_server(undef, $port, $self->_newConnectionCallback());
   
   #connections that wait for the handshake
   $self->{m_pendingConnections} = {};
@@ -54,7 +61,7 @@ sub _handshakeDoneCallback{
     my $connection = shift;
     my $ident = $connection->identifier();
     if(!defined $self->{m_pendingConnections}->{$ident}){
-      die "Connection not known in pending Connections";
+      exit "Connection not known in pending Connections";
     }
    
     $connection->disconnect($self->{m_pendingConnections}->{$ident}->{eventGuard});
@@ -76,7 +83,7 @@ sub _disconnectWhileHandshake{
     warn "Connection closed while Handshake still in progress";
     
     if(!defined $self->{m_pendingConnections}->{$ident}){
-      die "Connection not known in pending Connections";
+      exit "Connection not known in pending Connections";
     }
    
     $connection->disconnect($self->{m_pendingConnections}->{$ident}->{eventGuard});

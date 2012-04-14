@@ -21,8 +21,6 @@ use Pms::Core::Connection;
 use Pms::Core::ConnectionProvider;
 use Pms::Core::Channel;
 
-use Pms::Net::WebSocket::ConnectionProvider;
-
 our @ISA = qw(Pms::Core::Object);
 
 our $Debug = $ENV{'PMS_DEBUG'};
@@ -107,7 +105,7 @@ sub execute{
 }
 
 sub _loadConnectionProviders{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   if(!defined $self->{m_config}->{connectionProviders}){
     die "No Connectionprovider defined, edit Config.pm and add one";
   }
@@ -129,7 +127,7 @@ sub _loadConnectionProviders{
 }
 
 sub _loadModules{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   if(!defined $self->{m_config}->{modules}){
     return,
   }
@@ -165,8 +163,8 @@ sub _loadModules{
     undef if the module is not known or not loaded
 =cut
 sub getModule{
-  my $self = shift or die "Need Ref";
-  my $fqn  = shift or die "Need FQN";
+  my $self = shift or exit "Need Ref";
+  my $fqn  = shift or exit "Need FQN";
   
   return $self->{m_modules}->{$fqn};
   
@@ -184,8 +182,8 @@ sub getModule{
     0 for no
 =cut
 sub isModuleLoaded{
-  my $self = shift or die "Need Ref";
-  my $fqn  = shift or die "Need FQN";
+  my $self = shift or exit "Need Ref";
+  my $fqn  = shift or exit "Need FQN";
   
   if(defined $self->{m_modules}->{$fqn}){
     return 1;
@@ -205,7 +203,7 @@ sub isModuleLoaded{
     The new nickname
 =cut
 sub createUniqueNickname{
-      my $self = shift or die "Need Ref";
+      my $self = shift or exit "Need Ref";
       #TODO maybe use timestamp for generic username
       my $user = "User";
       my $cnt  = 0;
@@ -229,8 +227,8 @@ sub createUniqueNickname{
     The connection associated with the nickname or undef if none exists
 =cut
 sub nicknameToConnection{
-  my $self = shift or die "Need Ref";
-  my $nick = shift or die "Need Nickname";
+  my $self = shift or exit "Need Ref";
+  my $nick = shift or exit "Need Nickname";
   
   if(defined $self->{m_users}->{$nick}){
     return $self->{m_users}->{$nick};
@@ -259,9 +257,9 @@ sub nicknameToConnection{
     1 - for success
 =cut
 sub changeNick{
-  my $self = shift or die "Need Ref";
-  my $connection = shift or die "Need Connection Object";
-  my $newNick    = shift or die "Need a new Nick Argument";
+  my $self = shift or exit "Need Ref";
+  my $connection = shift or exit "Need Connection Object";
+  my $newNick    = shift or exit "Need a new Nick Argument";
   my $force      = shift;
   if(!defined $force){
     warn "Setting force to 0";
@@ -321,7 +319,7 @@ sub registerCommand{
 }
 
 sub channels{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   return keys(%{ $self->{m_channels} });        
 }
 
@@ -473,7 +471,7 @@ sub _sendCommandCallback{
 }
 
 sub _createChannelCallback{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   return sub{
     my $connection = shift;
@@ -519,7 +517,7 @@ sub _createChannelCallback{
 }
 
 sub _joinChannelCallback{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   return sub{
     my $connection = shift;
@@ -556,7 +554,7 @@ sub _joinChannelCallback{
 }
 
 sub _leaveChannelCallback{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   return sub{
     my $connection = shift;
@@ -583,7 +581,7 @@ sub _leaveChannelCallback{
 }
 
 sub _listChannelCallback{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
 
   return sub{
     my $connection = shift;
@@ -601,7 +599,7 @@ sub _listChannelCallback{
 }
 
 sub _changeNickCallback{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   return sub{
     my $connection = shift;
@@ -639,7 +637,7 @@ sub _changeNickCallback{
 }
 
 sub _listUsersCallback{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   return sub{
     my $connection = shift;

@@ -18,9 +18,9 @@ sub new {
   my $self = $class->SUPER::new( );
   bless($self,$class);
   
-  $self->{m_fh}     = shift or die "Connection needs a Socket Handle";
-  $self->{m_host}   = shift or die "Connection needs a Host Value";
-  $self->{m_port}   = shift or die "Connection needs a Port Value";
+  $self->{m_fh}     = shift or exit "Connection needs a Socket Handle";
+  $self->{m_host}   = shift or exit "Connection needs a Host Value";
+  $self->{m_port}   = shift or exit "Connection needs a Port Value";
   $self->{m_user}   = undef;
   $self->{m_buffer} = []; #internal read buffer
   
@@ -34,7 +34,7 @@ sub new {
  
 =cut
 sub close{
-  die "This function is virtual, it needs to be implemented in the subclass";  
+  exit "This function is virtual, it needs to be implemented in the subclass";  
 }
 
 
@@ -47,7 +47,7 @@ sub close{
  
 =cut
 sub identifier{
-  die "This function is virtual, it needs to be implemented in the subclass";  
+  exit "This function is virtual, it needs to be implemented in the subclass";  
 }
 
 
@@ -59,7 +59,7 @@ sub identifier{
  
 =cut
 sub messagesAvailable{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   #return the number of messages
   my $count = @{ $self->{m_buffer} };
@@ -76,7 +76,7 @@ sub messagesAvailable{
  
 =cut
 sub nextMessage{
-  my $self = shift or die "Need Ref";
+  my $self = shift or exit "Need Ref";
   
   my $message = shift(@{ $self->{m_buffer} });
   return $message;
@@ -96,7 +96,7 @@ sub nextMessage{
  postMessage instead. 
 =cut
 sub sendMessage{
-  die "This function is virtual, it needs to be implemented in the subclass";
+  exit "This function is virtual, it needs to be implemented in the subclass";
 }
 
 =begin nd
@@ -109,7 +109,7 @@ sub sendMessage{
  
 =cut
 sub postMessage{
-  die "This function is virtual, it needs to be implemented in the subclass";
+  exit "This function is virtual, it needs to be implemented in the subclass";
 }
 
 =begin nd
@@ -125,8 +125,8 @@ sub postMessage{
  
 =cut
 sub setUsername{
-  my $self = shift or die "Need Ref";
-  my $name = shift or die "Need Name";
+  my $self = shift or exit "Need Ref";
+  my $name = shift or exit "Need Name";
   my $oldname = $self->{m_user};
   
   

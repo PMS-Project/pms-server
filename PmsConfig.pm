@@ -15,7 +15,7 @@ my @connectionProviders = (
 );
 
 my %baseDBHash = (
-  db_host     => "localhost",
+  #db_host     => "localhost",
   db_database => "pms",
   db_user     => "pms",
   db_pass     => "secret"  
@@ -29,7 +29,7 @@ my @modules = (
   },
   {
     name     => "Pms::Modules::Backlog",
-    requires => "Pms::Modules::Database",
+    requires => undef,
     config   => \%baseDBHash
   },
   {
