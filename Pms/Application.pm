@@ -45,8 +45,11 @@ our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a ne
 sub new{
   my $class = shift;
   my $self = $class->SUPER::new( );
-  
   bless ($self, $class);
+  
+  $self->{m_config} = shift;     
+  
+  warn $self->{m_config};
   
   if($Debug){
     my $test = Pms::Core::Object->new();
@@ -97,31 +100,57 @@ sub new{
 sub execute{
   my $self = shift;
   
-  $self->{m_connectionProvider} = Pms::Net::WebSocket::ConnectionProvider->new($self);
-  $self->{m_connectionProvider}->reg_cb('connectionAvailable' => $self->_newConnectionCallback());
-   
-  $self->loadModules();
+  $self->_loadConnectionProviders();
+  $self->_loadModules();
+  
   $self->{m_eventLoop} ->recv; #eventloop
 }
 
-sub loadModules{
-  my $self = shift;
-  
-  opendir (my $dir, 'Pms/Modules') or die $!;
-  while( my $file = readdir($dir) ){
-    next if (!($file =~ m/.*\.pm$/));
-    print "Trying to load Module: ".$file,"\n";
-    
-    my $basename = $file;
-    $basename =~ s{\.pm$}{}g;   
-    
-    my $modname = "Pms::Modules::".$basename;
-    eval "require $modname";
-    
-    my $module = $modname->new($self);
-    $self->{m_modules}->{$modname} = $module;
+sub _loadConnectionProviders{
+  my $self = shift or die "Need Ref";
+  if(!defined $self->{m_config}->{connectionProviders}){
+    die "No Connectionprovider defined, edit Config.pm and add one";
   }
-  closedir $dir;  
+  
+  foreach my $curr (@{ $self->{m_config}->{connectionProviders} }){
+    if(!defined $curr->{name}){
+      die "No name defined in ConnectionProvider";
+    }
+    
+    warn "Trying to load ConnectionProvider: $curr->{name} ";
+    
+    my $name = $curr->{name};
+    eval "require $name" or die "Could not load ConnectionProvider: $name error: $@";;
+    
+    my $module = $name->new($self,$curr->{config});
+    $self->{m_connectionProvider}->{$name} = $module;
+    $module->reg_cb('connectionAvailable' => $self->_newConnectionCallback());
+  }
+}
+
+sub _loadModules{
+  my $self = shift or die "Need Ref";
+  if(!defined $self->{m_config}->{modules}){
+    return,
+  }
+  
+  foreach my $curr (@{ $self->{m_config}->{modules} }){
+    if(!defined $curr->{name}){
+      die "No name defined in Module";
+    }    
+    if(defined $curr->{requires}){
+      if(!self->isModuleLoaded($curr->{requires})){
+        die "Module $curr->{name} requires module $curr->{requires}";
+      }
+    }
+    
+    my $name = $curr->{name};
+    warn "Trying to load Module: $curr->{name} ";
+    
+    eval "require $name" or die "Could not load module: $name error: $@";
+    my $module = $name->new($self,$curr->{config});
+    $self->{m_modules}->{$curr} = $module;
+  }
 }
 
 =begin nd
@@ -140,6 +169,28 @@ sub getModule{
   my $fqn  = shift or die "Need FQN";
   
   return $self->{m_modules}->{$fqn};
+  
+}
+
+=begin nd
+  Function: isModuleLoaded
+    Checks if a module is loaded or not
+  
+  Access:
+    Public
+    
+  Returns:
+    1 for yes
+    0 for no
+=cut
+sub getModule{
+  my $self = shift or die "Need Ref";
+  my $fqn  = shift or die "Need FQN";
+  
+  if(defined $self->{m_modules}->{$fqn}){
+    return 1;
+  }
+  return 0;
   
 }
 
