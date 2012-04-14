@@ -14,7 +14,7 @@ sub new {
   
   bless($self,$class);
   
-  $self->{m_parent} = shift or exit "needs a reference to parent";
+  $self->{m_parent} = shift or die "needs a reference to parent";
   $self->{m_connectionQueue} = [];
   
   return $self;
@@ -22,14 +22,14 @@ sub new {
 }
 
 sub nextConnection{
-  my $self = shift or exit "No Ref";
+  my $self = shift or die "No Ref";
   
   my $connection = shift(@{ $self->{m_connectionQueue} });
   return $connection;
 }
 
 sub connectionsAvailable{
-  my $self = shift or exit "No Ref";
+  my $self = shift or die "No Ref";
   my $count = @{ $self->{m_connectionQueue} };
   return $count;
 }

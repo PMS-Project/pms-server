@@ -61,7 +61,7 @@ sub _handshakeDoneCallback{
     my $connection = shift;
     my $ident = $connection->identifier();
     if(!defined $self->{m_pendingConnections}->{$ident}){
-      exit "Connection not known in pending Connections";
+      die "Connection not known in pending Connections";
     }
    
     $connection->disconnect($self->{m_pendingConnections}->{$ident}->{eventGuard});
@@ -83,7 +83,7 @@ sub _disconnectWhileHandshake{
     warn "Connection closed while Handshake still in progress";
     
     if(!defined $self->{m_pendingConnections}->{$ident}){
-      exit "Connection not known in pending Connections";
+      die "Connection not known in pending Connections";
     }
    
     $connection->disconnect($self->{m_pendingConnections}->{$ident}->{eventGuard});

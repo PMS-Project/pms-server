@@ -18,17 +18,17 @@ sub new{
 }
 
 sub newName{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   return $self->{m_newname};
 }
 
 sub oldName{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   return $self->{m_oldname};
 }
 
 sub connection{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   return $self->{m_connection};
 }
 1;

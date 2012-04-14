@@ -8,10 +8,10 @@ use Pms::Core::Connection;
 use Pms::Core::Channel;
 
 sub chatMessage {
-  my $to   = shift or exit "Need a receiver";
-  my $who  = shift or exit "Need a username";
-  my $when = shift or exit "Need a when";
-  my $message = shift or exit "Need Message";
+  my $to   = shift or die "Need a receiver";
+  my $who  = shift or die "Need a username";
+  my $when = shift or die "Need a when";
+  my $message = shift or die "Need Message";
   
   return "/message '$to' '$who' '$when' '$message' ";
 }

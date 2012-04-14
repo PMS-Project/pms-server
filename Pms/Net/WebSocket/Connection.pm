@@ -47,7 +47,7 @@ sub _initializeHandle{
 }
 
 sub _onHandshakeFinished{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
   return sub{
     if($Debug){
       warn "Handshake is done";
@@ -68,7 +68,7 @@ sub _onHandshakeFinished{
 }
 
 sub _onErrorCallback{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
   
   return sub{
     warn "Websocket Error Closing Connection: $_[2]";
@@ -79,7 +79,7 @@ sub _onErrorCallback{
   }
 }
 sub _onEofCallback{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
   return sub {
     $_[0]->destroy; # destroy handle
     warn "Other Side disconnected.";
@@ -87,7 +87,7 @@ sub _onEofCallback{
   }
 }
 sub _readyRead{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
   
   my ($hdl, $line) = @_;
   warn "Data: ".$line;
@@ -98,14 +98,14 @@ sub _readyRead{
 }
 
 sub postMessage{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   my $message = shift;
   
   $self->{m_handle}->push_write(websock_pms => $message);
 }
 
 sub sendMessage{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   my $message = shift;
   
   my $frame  = Protocol::WebSocket::Frame->new(Pms::Prot::WebSocket::Protocol::_netstringify( $message ));
@@ -113,12 +113,12 @@ sub sendMessage{
 }
 
 sub close{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   $self->{m_handle}->push_shutdown();
 }
 
 sub identifier{
-  my $self = shift or exit "We need a Reference";
+  my $self = shift or die "We need a Reference";
   
   #for now we just use the filehandle
   return $self->{m_handle}->fh;

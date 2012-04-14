@@ -6,7 +6,7 @@ use PmsConfig;
 
 sub main (){
   my $app = Pms::Application->new(\%PmsConfig::Server);    
-  $app->execute();
+  Pms::Application::execute();
 }
 
 main();

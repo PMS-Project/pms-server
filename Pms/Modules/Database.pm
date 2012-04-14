@@ -20,13 +20,13 @@ sub new{
 }
 
 sub createHandle{
-  my $self = shift or exit "Need Ref";
+  my $self = shift or die "Need Ref";
   return new AnyEvent::DBI('DBI:mysql:pms', 'pms', 'secret');
 }
 
 sub closeHandle{
-  my $self = shift or exit "Need Ref";
-  my $hdl  = shift or exit "Need Handle to close it";
+  my $self = shift or die "Need Ref";
+  my $hdl  = shift or die "Need Handle to close it";
 }
 
 sub DESTROY{
