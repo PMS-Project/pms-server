@@ -9,7 +9,7 @@ our $Debug = $ENV{'PMS_DEBUG'};
 our @ISA = qw(Pms::Core::Connection);
 our %PmsEvents = ('handshake_done' => 1);
 
-sub new(){
+sub new{
   my $class = shift;
   my $self = $class->SUPER::new(@_);
   bless($self,$class);
@@ -33,7 +33,7 @@ sub new(){
   nothing
   
 =cut
-sub _initializeHandle(){
+sub _initializeHandle{
   my $self = shift;
   
   $self->{m_handle} =   new AnyEvent::Handle(
@@ -46,7 +46,7 @@ sub _initializeHandle(){
   $self->{m_handle}->push_read(websock_handshake => $self->_onHandshakeFinished());
 }
 
-sub _onHandshakeFinished(){
+sub _onHandshakeFinished{
   my $self = shift;
   return sub{
     if($Debug){
@@ -67,7 +67,7 @@ sub _onHandshakeFinished(){
   }
 }
 
-sub _onErrorCallback(){
+sub _onErrorCallback{
   my $self = shift;
   
   return sub{
@@ -78,7 +78,7 @@ sub _onErrorCallback(){
     $_[0]->destroy;
   }
 }
-sub _onEofCallback(){
+sub _onEofCallback{
   my $self = shift;
   return sub {
     $_[0]->destroy; # destroy handle
@@ -86,7 +86,7 @@ sub _onEofCallback(){
     $self->emitSignal('disconnect');
   }
 }
-sub _readyRead(){
+sub _readyRead{
   my $self = shift;
   
   my ($hdl, $line) = @_;
@@ -97,14 +97,14 @@ sub _readyRead(){
   
 }
 
-sub postMessage(){
+sub postMessage{
   my $self = shift or die "Need Ref";
   my $message = shift;
   
   $self->{m_handle}->push_write(websock_pms => $message);
 }
 
-sub sendMessage(){
+sub sendMessage{
   my $self = shift or die "Need Ref";
   my $message = shift;
   
@@ -112,12 +112,12 @@ sub sendMessage(){
   syswrite($self->{m_handle}->fh,$frame);
 }
 
-sub close(){
+sub close{
   my $self = shift or die "Need Ref";
   $self->{m_handle}->push_shutdown();
 }
 
-sub identifier(){
+sub identifier{
   my $self = shift or die "We need a Reference";
   
   #for now we just use the filehandle

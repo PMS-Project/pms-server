@@ -8,7 +8,7 @@ use Pms::Core::Object;
 our @ISA = qw(Pms::Core::Object);
 our %PmsEvents = ('connectionAvailable' => 1);
 
-sub new (){
+sub new {
   my $class = shift;
   my $self = $class->SUPER::new( );
   
@@ -21,14 +21,14 @@ sub new (){
   
 }
 
-sub nextConnection(){
+sub nextConnection{
   my $self = shift or die "No Ref";
   
   my $connection = shift(@{ $self->{m_connectionQueue} });
   return $connection;
 }
 
-sub connectionsAvailable(){
+sub connectionsAvailable{
   my $self = shift or die "No Ref";
   my $count = @{ $self->{m_connectionQueue} };
   return $count;

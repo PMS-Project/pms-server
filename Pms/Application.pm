@@ -42,7 +42,7 @@ our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a ne
                  , 'change_nick_success' => 1        # A user has changed his nickname
                  );
   
-sub new (){
+sub new{
   my $class = shift;
   my $self = $class->SUPER::new( );
   
@@ -70,9 +70,7 @@ sub new (){
                               signal => "TERM", 
                               cb     => $self->_termSignalCallback() );
 
-  $self->{m_timers}   = [];
-  $self->{m_clients}  = [];
-  $self->{m_modules}  = [];
+  $self->{m_modules}     = {};
   $self->{m_commands}    = {};
   $self->{m_connections} = {};
   $self->{m_users}       = {}; #users to connection map
@@ -96,7 +94,7 @@ sub new (){
   return $self;
 }
 
-sub execute (){
+sub execute{
   my $self = shift;
   
   $self->{m_connectionProvider} = Pms::Net::WebSocket::ConnectionProvider->new($self);
@@ -106,7 +104,7 @@ sub execute (){
   $self->{m_eventLoop} ->recv; #eventloop
 }
 
-sub loadModules (){
+sub loadModules{
   my $self = shift;
   
   opendir (my $dir, 'Pms/Modules') or die $!;
@@ -121,9 +119,28 @@ sub loadModules (){
     eval "require $modname";
     
     my $module = $modname->new($self);
-    push(@{$self->{m_modules}},$module); 
+    $self->{m_modules}->{$modname} = $module;
   }
   closedir $dir;  
+}
+
+=begin nd
+  Function: getModule
+    Return the instance of a module when it was loaded.
+  
+  Access:
+    Public
+    
+  Returns:
+    The reference to the module instance
+    undef if the module is not known or not loaded
+=cut
+sub getModule{
+  my $self = shift or die "Need Ref";
+  my $fqn  = shift or die "Need FQN";
+  
+  return $self->{m_modules}->{$fqn};
+  
 }
 
 =begin nd
@@ -136,7 +153,7 @@ sub loadModules (){
   Returns:
     The new nickname
 =cut
-sub createUniqueNickname (){
+sub createUniqueNickname{
       my $self = shift or die "Need Ref";
       #TODO maybe use timestamp for generic username
       my $user = "User";
@@ -160,7 +177,7 @@ sub createUniqueNickname (){
   Returns:
     The connection associated with the nickname or undef if none exists
 =cut
-sub nicknameToConnection (){
+sub nicknameToConnection{
   my $self = shift or die "Need Ref";
   my $nick = shift or die "Need Nickname";
   
@@ -190,7 +207,7 @@ sub nicknameToConnection (){
     0 - for failed
     1 - for success
 =cut
-sub changeNick (){
+sub changeNick{
   my $self = shift or die "Need Ref";
   my $connection = shift or die "Need Connection Object";
   my $newNick    = shift or die "Need a new Nick Argument";
@@ -240,7 +257,7 @@ sub changeNick (){
   return 1; #success
 }
 
-sub registerCommand (){
+sub registerCommand{
   my $self = shift;
   my $command = shift;
   my $cb = shift;
@@ -252,12 +269,12 @@ sub registerCommand (){
   warn "Command ".$command." already exists, did not register it"; 
 }
 
-sub channels (){
+sub channels{
   my $self = shift or die "Need Ref";
   return keys(%{ $self->{m_channels} });        
 }
 
-sub _termSignalCallback(){
+sub _termSignalCallback{
   my $self = shift;
   return sub {
     warn "Received TERM Signal\n";
@@ -265,7 +282,7 @@ sub _termSignalCallback(){
   }  
 }
 
-sub _newConnectionCallback(){
+sub _newConnectionCallback{
   my $self = shift;
 
   return sub{
@@ -307,7 +324,7 @@ sub _newConnectionCallback(){
   }
 }
 
-sub _dataAvailableCallback (){
+sub _dataAvailableCallback{
   my $self = shift;
   return sub {
         my ($connection) = @_;
@@ -326,7 +343,7 @@ sub _dataAvailableCallback (){
     }
 }
 
-sub _clientDisconnectCallback (){
+sub _clientDisconnectCallback{
   my $self = shift;
   return sub{
     my ($connection) = @_;
@@ -336,7 +353,7 @@ sub _clientDisconnectCallback (){
   }
 }
 
-sub invokeCommand() {
+sub invokeCommand{
   warn "@_" if($Debug);
   my ($self,$connection,%command) = @_;
   
@@ -357,7 +374,7 @@ sub invokeCommand() {
   }
 }
 
-sub _sendCommandCallback (){
+sub _sendCommandCallback{
   my $self    = shift;
   
   return sub{
@@ -404,7 +421,7 @@ sub _sendCommandCallback (){
   }
 }
 
-sub _createChannelCallback(){
+sub _createChannelCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
@@ -450,7 +467,7 @@ sub _createChannelCallback(){
   }
 }
 
-sub _joinChannelCallback (){
+sub _joinChannelCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
@@ -487,7 +504,7 @@ sub _joinChannelCallback (){
   }
 }
 
-sub _leaveChannelCallback (){
+sub _leaveChannelCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
@@ -514,7 +531,7 @@ sub _leaveChannelCallback (){
   }  
 }
 
-sub _listChannelCallback (){
+sub _listChannelCallback{
   my $self = shift or die "Need Ref";
 
   return sub{
@@ -532,7 +549,7 @@ sub _listChannelCallback (){
   }
 }
 
-sub _changeNickCallback (){
+sub _changeNickCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
@@ -559,7 +576,7 @@ sub _changeNickCallback (){
       if($Debug){
         warn "Nick was rejected, reason: ".$event->reason();
       }
-      $connection->postMessage("/serverMessage \"default\" \"Nick rejected: ".$event->reason()."\" ");
+      $connection->postMessage("/serverMessage \"default\" \"".$event->reason()."\" ");
       return;
     }
     
@@ -570,7 +587,7 @@ sub _changeNickCallback (){
   }
 }
 
-sub _listUsersCallback(){
+sub _listUsersCallback{
   my $self = shift or die "Need Ref";
   
   return sub{

@@ -6,7 +6,7 @@ use Pms::Event::Event;
 
 our @ISA = ("Pms::Event::Event");
 
-sub new(){
+sub new{
   my $class = shift;
   my $self  = $class->SUPER::new();
   bless($self,$class);
@@ -16,15 +16,15 @@ sub new(){
   return $self;
 }
 
-sub setClosing(){
+sub setClosing{
   $_[0]->{m_closing} = $_[1];
 }
 
-sub isClosing(){
+sub isClosing{
   return $_[0]->{m_closing};
 }
 
-sub channel() {
+sub channel{
   return $_[0]->{m_channel};
 }
 

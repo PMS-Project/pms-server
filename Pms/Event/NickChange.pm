@@ -6,7 +6,7 @@ use strict;
 use Pms::Event::Event;
 our @ISA = ("Pms::Event::Event");
 
-sub new(){
+sub new{
   my $class = shift;
   my $self  = $class->SUPER::new();
   bless($self,$class);
@@ -17,13 +17,18 @@ sub new(){
   return $self;
 }
 
-sub newName (){
+sub newName{
   my $self = shift or die "Need Ref";
   return $self->{m_newname};
 }
 
-sub oldName (){
+sub oldName{
   my $self = shift or die "Need Ref";
   return $self->{m_oldname};
+}
+
+sub connection{
+  my $self = shift or die "Need Ref";
+  return $self->{m_connection};
 }
 1;

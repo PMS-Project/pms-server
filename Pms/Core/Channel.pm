@@ -3,7 +3,7 @@
 package Pms::Core::Channel;
 use strict;
 
-sub new (){
+sub new {
   my $class = shift;
   my $self  = {};
   bless($self,$class);
@@ -16,19 +16,19 @@ sub new (){
   return $self;
 }
 
-sub channelName (){
+sub channelName {
   my $self = shift or die "Need Ref";
   return $self->{m_name};
 }
 
-sub _connectionForIdent(){
+sub _connectionForIdent{
   my $self = shift or die "Need Ref";
   my $key  = shift or die "Need Key";
   
   return $self->{m_connections}->{$key}->{"object"};
 }
 
-sub sendMessage(){
+sub sendMessage{
   my $self = shift or die "Need Ref";
   my $who  = shift or die "Need a username";
   my $when = shift or die "Need a when";
@@ -44,7 +44,7 @@ sub sendMessage(){
   } 
 }
 
-sub sendChannelMessage(){
+sub sendChannelMessage{
   my $self = shift or die "Need Ref";  
   my $message = shift or die "Need Message";
   
@@ -57,7 +57,7 @@ sub sendChannelMessage(){
   } 
 }
 
-sub addConnection (){
+sub addConnection {
   my $self = shift;
   my $connection = shift;
   
@@ -75,7 +75,7 @@ sub addConnection (){
   $connection->postMessage("/openwindow \"".$self->{m_name}."\"");
 }
 
-sub _disconnectCallback(){
+sub _disconnectCallback{
   my $self = shift;
   return sub{
     my $connection = shift;
@@ -83,7 +83,7 @@ sub _disconnectCallback(){
   }
 }
 
-sub _changeUsernameCallback(){
+sub _changeUsernameCallback{
   my $self = shift;
   return sub{
     my $connection = shift;
@@ -94,7 +94,7 @@ sub _changeUsernameCallback(){
   }
 }
 
-sub removeConnection() {
+sub removeConnection {
   my $self = shift;
   my $connection = shift;
   
@@ -115,7 +115,7 @@ sub removeConnection() {
   $self->sendChannelMessage("Client ".$connection->username()." disconnected");
 }
 
-sub userList() {
+sub userList {
   my $self = shift or die "Need Ref";
   my @list;
   

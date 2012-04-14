@@ -25,7 +25,7 @@ our %PmsEvents = ('connectionAvailable' => 1);
 
 our $Debug = $ENV{'PMS_DEBUG'};
 
-sub new (){
+sub new {
   my $class = shift;
   my $self  = $class->SUPER::new( );
   bless($self,$class);
@@ -33,7 +33,7 @@ sub new (){
   return $self;
 }
 
-sub connect (){
+sub connect {
   my $self = shift;
   my @args = @_;
   
@@ -58,7 +58,7 @@ sub connect (){
   $self->reg_cb(@_);
 }
 
-sub emitSignal (){
+sub emitSignal {
   my $self = shift;
   my $signal = shift;
   
@@ -72,14 +72,14 @@ sub emitSignal (){
   return $self->event($signal => @_);
 }
 
-sub disconnect (){
+sub disconnect {
   my $self = shift;
   my $guard = shift;
 
   $self->unreg_cb($guard);
 }
 
-sub _hasEvent(){
+sub _hasEvent{
   my $self = shift;
   my $eventName = shift;
   
@@ -88,7 +88,7 @@ sub _hasEvent(){
   return $self->_searchEvent($eventName,@currClasses);
 }
 
-sub _searchEvent(){
+sub _searchEvent{
   my $self = shift;
   my $event = shift;
   my @classes = shift;
@@ -113,7 +113,7 @@ sub _searchEvent(){
   return 0;
 }
 
-sub _getSuperClasses(){
+sub _getSuperClasses{
   my $self = shift;
   my $class = shift;
   
@@ -124,7 +124,7 @@ sub _getSuperClasses(){
   return @classes;
 }
 
-sub _getEvents(){
+sub _getEvents{
   my $self = shift;
   my $class = shift;
   

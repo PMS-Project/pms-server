@@ -6,7 +6,7 @@ use Pms::Event::Event;
 
 our @ISA = ("Pms::Event::Event");
 
-sub new(){
+sub new{
   my $class = shift;
   my $self  = $class->SUPER::new();
   bless($self,$class);
@@ -16,7 +16,7 @@ sub new(){
   return $self;
 }
 
-sub connection(){
+sub connection{
   my $self = shift;
   return $self->{m_connection};
 }

@@ -5,7 +5,7 @@ package Pms::Modules::Database;
 use strict;
 use AnyEvent::DBI;
 
-sub new (){
+sub new{
   my $class = shift;
   my $self  = {};
   bless ($self, $class);
@@ -18,27 +18,27 @@ sub new (){
   return $self;
 }
 
-sub createHandle (){
+sub createHandle{
   my $self = shift or die "Need Ref";
   return new AnyEvent::DBI('DBI:mysql:pms', 'pms', 'secret');
 }
 
-sub closeHandle (){
+sub closeHandle{
   my $self = shift or die "Need Ref";
   my $hdl  = shift or die "Need Handle to close it";
 }
 
-sub DESTROY(){
+sub DESTROY{
   my $self = shift;
   $self->shutdown();
 }
 
-sub initialize (){
+sub initialize{
   my $self = shift;
 
 }
 
-sub shutdown (){
+sub shutdown{
   my $self = shift;
   warn "Shutting Down";
   $self->{m_parent}->disconnect($self->{m_eventGuard});

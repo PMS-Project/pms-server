@@ -12,7 +12,7 @@ use AnyEvent::Socket;
 
 our @ISA = qw(Pms::Core::ConnectionProvider);
 
-sub new(){
+sub new{
   my $class = shift;
   my $self = $class->SUPER::new(@_);
   bless($self,$class);
@@ -26,7 +26,7 @@ sub new(){
   return $self;         
 }
 
-sub _newConnectionCallback(){
+sub _newConnectionCallback{
   my $self = shift;
 
   return sub{
@@ -47,7 +47,7 @@ sub _newConnectionCallback(){
   }
 }
 
-sub _handshakeDoneCallback(){
+sub _handshakeDoneCallback{
   my $self = shift;
   
   return sub{
@@ -66,7 +66,7 @@ sub _handshakeDoneCallback(){
   }
 }
 
-sub _disconnectWhileHandshake(){
+sub _disconnectWhileHandshake{
  my $self = shift;
   
   return sub{

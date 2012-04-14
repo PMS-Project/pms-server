@@ -79,7 +79,7 @@ sub new{
     or a *hash* containing the name and the arguments for the command 
     that needs to get called.
 =cut 
-sub parseMessage (){
+sub parseMessage {
   my $self = shift;
   my $string = shift;
   my $message;
@@ -158,7 +158,7 @@ sub parseMessage (){
   Parameters:
     $buffer - The buffer that contains the message
 =cut
-sub _consumeWhitespace(){
+sub _consumeWhitespace{
   my $message = shift;
   $$message =~ s/\s+$//; #remove leading spaces
 }
@@ -177,7 +177,7 @@ sub _consumeWhitespace(){
   Returns:
     The token or undef if a error happened
 =cut
-sub _parseToken (){
+sub _parseToken {
   my $self = shift;
   my $message = shift;
   my $token;
@@ -228,7 +228,7 @@ sub _parseToken (){
   Returns:
     The string or undef if a error happened
 =cut
-sub _parseQuotedString (){
+sub _parseQuotedString {
   my $self = shift;
   my $message = shift;
   
@@ -252,7 +252,7 @@ sub _parseQuotedString (){
   Returns:
     The string or undef if a error happened
 =cut
-sub _parseUnquotedString (){
+sub _parseUnquotedString {
   my $self = shift;
   my $message = shift;
   
@@ -261,7 +261,7 @@ sub _parseUnquotedString (){
 }
 
 
-sub _parseString (){
+sub _parseString {
   my $self = shift;
   my $message = shift;
   my $quotes = shift;
@@ -320,7 +320,7 @@ sub _parseString (){
   Returns:
     The number or undef if a error happened
 =cut
-sub _parseNumber (){
+sub _parseNumber {
   my $self = shift;
   my $message = shift;
   

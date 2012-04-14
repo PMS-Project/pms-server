@@ -7,7 +7,7 @@ use Pms::Application;
 use Pms::Core::Connection;
 use Pms::Core::Channel;
 
-sub chatMessage (){
+sub chatMessage {
   my $to   = shift or die "Need a receiver";
   my $who  = shift or die "Need a username";
   my $when = shift or die "Need a when";
@@ -16,7 +16,7 @@ sub chatMessage (){
   return "/message '$to' '$who' '$when' '$message' ";
 }
 
-sub joinedMessage (){
+sub joinedMessage {
   my $connection = shift;
   my $channel    = shift;
   
@@ -25,7 +25,7 @@ sub joinedMessage (){
   return $msg; 
 }
 
-sub leftMessage (){
+sub leftMessage {
   my $connection = shift;
   my $channel    = shift;
   
@@ -34,7 +34,7 @@ sub leftMessage (){
   return $msg;
 }
 
-sub userListMessage (){
+sub userListMessage {
   my $connection = shift;
   my $channel    = shift;
   
@@ -48,12 +48,12 @@ sub userListMessage (){
   return $msg;
 }
 
-sub channelListMessage (){
+sub channelListMessage {
   my $server = shift;
   
   
-  @channels = $server->channels();
-  $msg = "/channellist ";
+  my @channels = $server->channels();
+  my $msg = "/channellist ";
   
   foreach my $curr (@channels){
     $msg .= " '$curr' ";
@@ -62,19 +62,21 @@ sub channelListMessage (){
   return $msg;
 }
 
-sub serverMessage  (){
+sub serverMessage  {
   my $toChannel = shift;
   my $message   = shift;
   
-  return "/serverMessage '$channel' '$message'";
+  return "/serverMessage '$toChannel' '$message'";
 }
 
-sub openWindowMessage (){
+sub openWindowMessage {
   my $windowname = shift;
   return "/openwindow '$windowname'";
 }
 
-sub closeWindowMessage (){
+sub closeWindowMessage {
   my $windowname = shift;
   return "/closewindow '$windowname'";
 }
+
+1;

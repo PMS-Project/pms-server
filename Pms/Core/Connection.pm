@@ -13,7 +13,7 @@ our %PmsEvents = ('dataAvailable' => 1,
                   'change_username' => 1
                  );
 
-sub new (){
+sub new {
   my $class = shift;
   my $self = $class->SUPER::new( );
   bless($self,$class);
@@ -33,7 +33,7 @@ sub new (){
  Closes the connection to the other side
  
 =cut
-sub close(){
+sub close{
   die "This function is virtual, it needs to be implemented in the subclass";  
 }
 
@@ -46,7 +46,7 @@ sub close(){
  Can be used in Hashes.
  
 =cut
-sub identifier(){
+sub identifier{
   die "This function is virtual, it needs to be implemented in the subclass";  
 }
 
@@ -58,7 +58,7 @@ sub identifier(){
  The number of messages in the internal buffer
  
 =cut
-sub messagesAvailable(){
+sub messagesAvailable{
   my $self = shift or die "Need Ref";
   
   #return the number of messages
@@ -75,7 +75,7 @@ sub messagesAvailable(){
  The next message
  
 =cut
-sub nextMessage(){
+sub nextMessage{
   my $self = shift or die "Need Ref";
   
   my $message = shift(@{ $self->{m_buffer} });
@@ -95,7 +95,7 @@ sub nextMessage(){
  Do not use this, most of the time you want to use
  postMessage instead. 
 =cut
-sub sendMessage(){
+sub sendMessage{
   die "This function is virtual, it needs to be implemented in the subclass";
 }
 
@@ -108,7 +108,7 @@ sub sendMessage(){
     message - The message to be sent
  
 =cut
-sub postMessage(){
+sub postMessage{
   die "This function is virtual, it needs to be implemented in the subclass";
 }
 
@@ -124,7 +124,7 @@ sub postMessage(){
     username - The new username
  
 =cut
-sub setUsername(){
+sub setUsername{
   my $self = shift or die "Need Ref";
   my $name = shift or die "Need Name";
   my $oldname = $self->{m_user};
@@ -140,7 +140,7 @@ sub setUsername(){
  Returns: 
  The username associated with this connection
 =cut
-sub username(){
+sub username{
   return $_[0]->{m_user};
 }
 

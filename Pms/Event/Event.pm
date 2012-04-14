@@ -3,7 +3,7 @@
 package Pms::Event::Event;
 use strict;
 
-sub new(){
+sub new{
   my $class = shift;
   my $self  = {};
   bless ($self,$class);
@@ -13,18 +13,18 @@ sub new(){
   return $self;
 }
 
-sub reject(){
+sub reject{
   my $self = shift;
   $self->{m_rejected} = 1;
   $self->{m_reason} = shift;
 }
 
-sub wasRejected (){
+sub wasRejected{
   my $self = shift;
   return $self->{m_rejected};
 }
 
-sub reason (){
+sub reason{
   my $self = shift;
   return $self->{m_reason};
 }

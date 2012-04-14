@@ -5,7 +5,7 @@ package Pms::Modules::Motd;
 use strict;
 use Pms::Event::Connect;
 
-sub new (){
+sub new{
   my $class = shift;
   my $self  = {};
   bless ($self, $class);
@@ -18,12 +18,12 @@ sub new (){
   return $self;
 }
 
-sub DESTROY(){
+sub DESTROY{
   my $self = shift;
   $self->shutdown();
 }
 
-sub initialize (){
+sub initialize{
   my $self = shift;
   $self->{m_eventGuard} = $self->{m_parent}->connect( 
     client_connect_success => sub{
