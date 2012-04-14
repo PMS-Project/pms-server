@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Backlog;
+package Pms::Modules::Backlog;
 
 use strict;
 

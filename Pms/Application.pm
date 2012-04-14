@@ -109,17 +109,18 @@ sub execute (){
 sub loadModules (){
   my $self = shift;
   
-  opendir (my $dir, 'Pms/modules') or die $!;
+  opendir (my $dir, 'Pms/Modules') or die $!;
   while( my $file = readdir($dir) ){
     next if (!($file =~ m/.*\.pm$/));
     print "Trying to load Module: ".$file,"\n";
     
-    my $modname = "Pms/modules/".$file;
     my $basename = $file;
     $basename =~ s{\.pm$}{}g;   
-    require $modname;
     
-    my $module = $basename->new($self);
+    my $modname = "Pms::Modules::".$basename;
+    eval "require $modname";
+    
+    my $module = $modname->new($self);
     push(@{$self->{m_modules}},$module); 
   }
   closedir $dir;  

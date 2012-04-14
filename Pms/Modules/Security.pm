@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Security;
+package Pms::Modules::Security;
 
 use strict;
 use Pms::Event::Connect;
@@ -57,7 +57,4 @@ sub _identifyCallback(){
     }
   }
 }
-
-
-
 1;

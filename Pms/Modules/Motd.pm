@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Motd;
+package Pms::Modules::Motd;
 
 use strict;
 use Pms::Event::Connect;
