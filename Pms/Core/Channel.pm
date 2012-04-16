@@ -69,7 +69,7 @@ sub addConnection {
     return;
   }
   
-  my $stuff= { "eventguard" => $connection->connect("disconnect" => $self->_disconnectCallback(),"change_username" => $self->_changeUsernameCallback()),
+  my $stuff= { "eventguard" => $connection->connect("disconnect" => $self->_disconnectCallback()),
                "object"     => $connection
   };
   
@@ -85,17 +85,6 @@ sub _disconnectCallback{
   return sub{
     my $connection = shift;
     $self->removeConnection($connection);
-  }
-}
-
-sub _changeUsernameCallback{
-  my $self = shift;
-  return sub{
-    my $connection = shift;
-    my $oldname = shift;
-    my $newname = shift;
-    
-    $self->sendChannelMessage(Pms::Prot::Messages::nickChangeMessage($oldname,$newname));
   }
 }
 
@@ -116,7 +105,6 @@ sub removeConnection {
   
   #TODO check if connection is still open
   $connection->postMessage(Pms::Prot::Messages::closeWindowMessage($self->{m_name}));
-  
   $self->sendChannelMessage(Pms::Prot::Messages::leftMessage($connection,$self));
 }
 

@@ -635,6 +635,7 @@ sub _changeNickCallback{
       return;
     }
     
+    my $oldname = $connection->username();
     my $event = Pms::Event::NickChange->new($connection,$connection->username(),$newname);
     $self->emitSignal('change_nick_request' => $event);
 
@@ -650,6 +651,10 @@ sub _changeNickCallback{
       #a error happened
       $connection->postMessage("/serverMessage \"default\" \"$self->{m_lastError}\"");
     }  
+    
+    foreach my $curr(keys %{$self->{m_connections}}){
+      $self->{m_connections}->{$curr}->postMessage(Pms::Prot::Messages::nickChangeMessage($oldname,$newname));
+    }
   }
 }
 
