@@ -42,7 +42,6 @@ sub nickChangeMessage {
 }
 
 sub userListMessage {
-  my $connection = shift;
   my $channel    = shift;
   
   my @users = $channel->userList();

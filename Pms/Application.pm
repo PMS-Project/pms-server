@@ -670,10 +670,8 @@ sub _listUsersCallback{
       return;
     }
     
-    my @users = $self->{m_channels}->{$channel}->userList();
-    foreach my $curr (@users){
-      $connection->postMessage("/serverMessage \"$channel\" \"$curr\"");
-    }
+    my $message = Pms::Prot::Messages::userListMessage($self->{m_channels}->{$channel});
+    $connection->postMessage($message);
   }
 }
 
