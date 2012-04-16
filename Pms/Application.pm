@@ -286,15 +286,17 @@ sub changeNick{
     if($force == 1){
         my $newname = $self->createUniqueNickname();
         my $otherConnection = $self->nicknameToConnection($newNick);
+        my $oldname = $otherConnection->username();
         
-        my $event = Pms::Event::NickChange->new($otherConnection,$otherConnection->username(),$newname);
+        my $event = Pms::Event::NickChange->new($otherConnection,$oldname,$newname);
         
         delete $self->{m_users}->{$otherConnection->username()};
         $self->{m_users}->{$newname} = $otherConnection;
         $otherConnection->setUsername($newname);
         
         #tell the modules we changed a nick
-        $self->emitSignal('change_nick_success' => $event);     
+        $self->emitSignal('change_nick_success' => $event);   
+        $self->sendBroadcast(Pms::Prot::Messages::nickChangeMessage($oldname,$newname));
     }else{
       $self->{m_lastError} = "User $newNick already exists";
       return 0;
@@ -302,14 +304,16 @@ sub changeNick{
   }
   
   #do the actual nick change
-  my $event = Pms::Event::NickChange->new($connection,$connection->username(),$newNick);
+  my $oldNick = $connection->username();
+  my $event = Pms::Event::NickChange->new($connection,$oldNick,$newNick);
   
   delete $self->{m_users}->{$connection->username()};
   $self->{m_users}->{$newNick} = $connection;
   $connection->setUsername($newNick);
       
   $self->emitSignal('change_nick_success' => $event);
-  
+  $self->sendBroadcast(Pms::Prot::Messages::nickChangeMessage($oldNick,$newNick));
+ 
   return 1; #success
 }
 
@@ -328,6 +332,14 @@ sub registerCommand{
 sub channels{
   my $self = shift or die "Need Ref";
   return keys(%{ $self->{m_channels} });        
+}
+
+sub sendBroadcast{
+  my $self = shift or die "Need Ref";
+  my $message = shift or die "Need Message";
+  foreach my $curr(keys %{$self->{m_connections}}){
+    $self->{m_connections}->{$curr}->postMessage($message);
+  }
 }
 
 sub _termSignalCallback{
@@ -651,10 +663,6 @@ sub _changeNickCallback{
       #a error happened
       $connection->postMessage("/serverMessage \"default\" \"$self->{m_lastError}\"");
     }  
-    
-    foreach my $curr(keys %{$self->{m_connections}}){
-      $self->{m_connections}->{$curr}->postMessage(Pms::Prot::Messages::nickChangeMessage($oldname,$newname));
-    }
   }
 }
 
