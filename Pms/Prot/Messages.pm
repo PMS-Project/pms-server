@@ -20,7 +20,7 @@ sub joinedMessage {
   my $connection = shift;
   my $channel    = shift;
   
-  my $msg = "/joined '$channel->channelName()' '$connection->username()'";
+  my $msg = "/joined '".$channel->channelName()."' '".$connection->username()."'";
   
   return $msg; 
 }
@@ -29,7 +29,7 @@ sub leftMessage {
   my $connection = shift;
   my $channel    = shift;
   
-  my $msg = "/left '$channel->channelName()' '$connection->username()'";
+  my $msg = "/left '".$channel->channelName()."' '".$connection->username()."'";
   
   return $msg;
 }
@@ -45,7 +45,7 @@ sub userListMessage {
   my $channel    = shift;
   
   my @users = $channel->userList();
-  my $msg = "/userlist '$channel->channelName()' ";
+  my $msg = "/userlist '".$channel->channelName()."' ";
   
   foreach my $curr (@users){
     $msg .= " '$curr'";
