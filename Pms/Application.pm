@@ -15,8 +15,11 @@ use Pms::Event::Channel;
 use Pms::Event::Join;
 use Pms::Event::Leave;
 use Pms::Event::NickChange;
+use Pms::Event::Command;
+use Pms::Event::Topic;
 
 use Pms::Prot::Parser;
+use Pms::Prot::Messages;
 use Pms::Core::Connection;
 use Pms::Core::ConnectionProvider;
 use Pms::Core::Channel;
@@ -38,6 +41,9 @@ our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a ne
                  , 'channel_close_success' => 1      # A channel was deleted/closed
                  , 'change_nick_request' => 1        # A user tries to change his nickname
                  , 'change_nick_success' => 1        # A user has changed his nickname
+                 , 'change_topic_request' => 1        # A user tries to change a channel topic
+                 , 'change_topic_success' => 1        # A user has changed a channel topic
+                 , 'execute_command_request' =>      # A user tries to execute a custom command
                  );
   
 sub new{
@@ -89,7 +95,8 @@ sub new{
                                    'create' => $self->_createChannelCallback(),
                                    'list' => $self->_listChannelCallback(),
                                    'nick' => $self->_changeNickCallback(),
-                                   'users' => $self->_listUsersCallback()
+                                   'users' => $self->_listUsersCallback(),
+                                   'topic' => $self->_changeChannelTopicCallback()
                                   );
 
   return $self;
@@ -416,6 +423,16 @@ sub invokeCommand{
   
   #now try the registered
   if(exists $self->{m_commands}->{$command{'name'}}){
+    
+    my $event = Pms::Event::Command->new($command{'name'},$command{'args'});
+    $self->emitSignal('execute_command_request' => $event);
+
+    if($event->wasRejected()){
+      warn "Execute command was rejected, reason: ".$event->reason();
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$event->reason()));
+      return;
+    }
+    
     warn "Invoking Custom Command: ".$command{'name'} if($Debug);
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
@@ -488,7 +505,7 @@ sub _createChannelCallback{
     }
 
     if($channel =~ m/[^\d\w]+/){
-      $connection->postMessage("/message \"default\" \"Channelname can only contain digits and letters\"");
+      $connection->postMessage("/serverMessage \"default\" \"Channelname can only contain digits and letters\"");
       return;
     }
     
@@ -657,6 +674,30 @@ sub _listUsersCallback{
     foreach my $curr (@users){
       $connection->postMessage("/serverMessage \"$channel\" \"$curr\"");
     }
+  }
+}
+
+sub _changeChannelTopicCallback{
+  my $self = shift or die "Need Ref";
+  
+  return sub{
+    my $connection = shift;
+    my $channel    = shift;
+    my $topic      = shift;
+    
+    if(!defined $connection){
+      return;
+    }
+    
+    if(!defined $channel || !defined $topic){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Wrong Parameters for topic command"));
+    }
+    
+    if(!defined $self->{m_channels}->{$channel}){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Channel $channel does not exist"));
+    }
+    
+    $self->{m_channels}->{$channel}->setTopic($topic);
   }
 }
 

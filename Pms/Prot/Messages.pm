@@ -34,6 +34,13 @@ sub leftMessage {
   return $msg;
 }
 
+sub nickChangeMessage {
+  my $oldnick = shift;
+  my $newnick = shift;
+  
+  my $msg = "/nickchange '$oldnick' '$newnick'";
+}
+
 sub userListMessage {
   my $connection = shift;
   my $channel    = shift;
@@ -67,6 +74,13 @@ sub serverMessage  {
   my $message   = shift;
   
   return "/serverMessage '$toChannel' '$message'";
+}
+
+sub newTopicMessage {
+  my $channel = shift;
+  my $topic   = shift;
+  
+  return "/channeltopic '$channel' '$topic'";
 }
 
 sub openWindowMessage {

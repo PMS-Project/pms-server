@@ -3,6 +3,8 @@
 package Pms::Core::Channel;
 use strict;
 
+use Pms::Prot::Messages;
+
 sub new {
   my $class = shift;
   my $self  = {};
@@ -10,6 +12,7 @@ sub new {
   
   $self->{m_parent} = shift or die "Channel needs a Parent";
   $self->{m_name}   = shift or die "Channel needs a Name";
+  $self->{m_topic}  = "Welcome to the ".$self->{m_name}." Channel";
   $self->{m_connections} = {}; #all connections that joined the channel
   $self->{m_persistent}  = 0; #will the channel stay open after the last user has disconnected?
   
@@ -39,7 +42,7 @@ sub sendMessage{
   
   foreach my $k (keys %{$self->{m_connections}}){
     if(defined($self->{m_connections}->{$k})){
-       $self->_connectionForIdent($k)->postMessage("/message \"".$self->{m_name}."\" \"".$who."\" ".$when." \"".$message."\"");
+       $self->_connectionForIdent($k)->postMessage(Pms::Prot::Messages::chatMessage($self->{m_name},$who,$when,$message));
     }
   } 
 }
@@ -52,7 +55,7 @@ sub sendChannelMessage{
   
   foreach my $k (keys %{$self->{m_connections}}){
     if(defined($self->{m_connections}->{$k})){
-       $self->_connectionForIdent($k)->postMessage("/serverMessage \"".$self->{m_name}."\" \"".$message."\"");
+       $self->_connectionForIdent($k)->postMessage($message);
     }
   } 
 }
@@ -72,7 +75,9 @@ sub addConnection {
   
   
   $self->{m_connections}->{$connection->identifier()} = $stuff;
-  $connection->postMessage("/openwindow \"".$self->{m_name}."\"");
+  $connection->postMessage(Pms::Prot::Messages::openWindowMessage($self->{m_name}));
+  $connection->postMessage(Pms::Prot::Messages::newTopicMessage($self->{m_name},$self->{m_topic}));
+  $self->sendChannelMessage(Pms::Prot::Messages::joinedMessage($connection,$self));
 }
 
 sub _disconnectCallback{
@@ -90,7 +95,7 @@ sub _changeUsernameCallback{
     my $oldname = shift;
     my $newname = shift;
     
-    $self->sendChannelMessage("User ".$oldname." is now named ".$newname);
+    $self->sendChannelMessage(Pms::Prot::Messages::nickChangeMessage($oldname,$newname));
   }
 }
 
@@ -109,10 +114,10 @@ sub removeConnection {
   
   delete $self->{m_connections}->{$connection->identifier()};
   
-  #TODO check if connection is still open 
-  $connection->postMessage("/closewindow \"".$self->{m_name}."\"");
+  #TODO check if connection is still open
+  $connection->postMessage(Pms::Prot::Messages::closeWindowMessage($self->{m_name}));
   
-  $self->sendChannelMessage("Client ".$connection->username()." disconnected");
+  $self->sendChannelMessage(Pms::Prot::Messages::leftMessage($connection,$self));
 }
 
 sub userList {
@@ -126,5 +131,17 @@ sub userList {
   }
   
   return @list;
+}
+
+sub setTopic{
+  my $self = shift or die "Need Ref";
+  my $topic = shift or die "Need New Topic";
+  
+  $self->{m_topic} = $topic;
+  $self->sendChannelMessage(Pms::Prot::Messages::newTopicMessage($self->{m_name},$self->{m_topic}));
+}
+
+sub topic {
+  return $_[0]->{m_topic};
 }
 1;
