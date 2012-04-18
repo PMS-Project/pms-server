@@ -47,6 +47,13 @@ sub sendMessage{
   } 
 }
 
+sub hasConnection{
+  my $self = shift or die "Need Ref";  
+  my $connId = shift or die "Need ConnectionId";
+  
+  return (defined $self->{m_connections}->{$connId});
+}
+
 sub sendChannelMessage{
   my $self = shift or die "Need Ref";  
   my $message = shift or die "Need Message";

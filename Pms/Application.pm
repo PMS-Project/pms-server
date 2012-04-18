@@ -108,6 +108,7 @@ sub execute{
   $self->_loadConnectionProviders();
   $self->_loadModules();
   
+  warn "Starting the Eventloop, listening for Connections";
   $self->{m_eventLoop} ->recv; #eventloop
 }
 
@@ -317,6 +318,116 @@ sub changeNick{
   return 1; #success
 }
 
+=begin nd
+  Function: joinChannel
+    Adds a connection to a existing Channel
+  
+  Access:
+    Public
+    
+  Parameters:
+    $connection  - The User connection Object
+    $channelName - The Channel Name
+    $force       - Don't ask for Permission (don't send the  join_channel_request event)
+    
+  Returns:
+    0 - for failed
+    1 - for success
+=cut
+sub joinChannel{
+  my $self = shift or die "Need Ref";
+  my $connection = shift or die "Need Connection";
+  my $channelName = shift or die "Need Channel Name";
+  my $force       = shift;
+  
+  if(!defined $force){
+    $force = 0;
+  }
+  
+  if(!defined $self->{m_channels}{$channelName}){
+    $self->{m_lastError} = "Channel $channelName does not exist";
+    return 0;
+  }
+  
+  my $channel = $self->{m_channels}{$channelName};
+  my $event = Pms::Event::Join->new($connection,$channel);
+  if(!$force){
+    $self->emitSignal('join_channel_request' => $event);
+
+    if($event->wasRejected()){
+      if($Debug){
+        warn "Join was rejected, reason: ".$event->reason();
+      }
+      $self->{m_lastError} = $event->reason();
+      return 0;
+    }
+  }
+  
+  $channel->addConnection($connection);
+  $self->emitSignal('join_channel_success' => $event); 
+  
+  return 1;
+}
+
+=begin nd
+  Function: createChannel
+    Creates and opens a Channel. If the connection Object is valid,
+    the Connection is added to the Channel (join)
+  
+  Access:
+    Public
+    
+  Parameters:
+    $connection  - The User connection Object
+    $channelName - The Channel Name
+    $force       - Don't ask for Permission (don't send the  create_channel_request event)
+    
+  Returns:
+    0 - for failed
+    1 - for success
+=cut
+sub createChannel{
+  my $self = shift or die "Need Ref";
+  my $connection = shift;
+  my $channelName= shift or die "Need Channel Name";
+  my $force      = shift;
+  
+  if(!defined $force){
+    $force = 0;
+  }
+  
+  if($channelName =~ m/[^\d\w]+/){
+    $self->{m_lastError} = "Channelname can only contain digits and letters";
+    return 0;
+  }
+  
+  if(defined $self->{m_channels}{$channelName}){
+    $self->{m_lastError} = "Channel $channelName already exists";
+    return 0;
+  }
+  
+  if(!$force){
+    my $event = Pms::Event::Channel->new($connection,$channelName);
+    $self->emitSignal(create_channel_request => $event);
+    if($event->wasRejected()){
+      $self->{m_lastError} = $event->reason();
+      return 0;
+    }   
+  }
+  
+  $self->{m_channels}{$channelName} = new Pms::Core::Channel($self,$channelName);
+  
+  if(defined $connection){
+    #let the user enter the channel
+    $self->joinChannel($connection,$channelName,1);
+  }
+  
+  #tell all modules the channel was created
+  my $event = Pms::Event::Channel->new($connection,$channelName);
+  $self->emitSignal(create_channel_success => $event);
+  return 1;
+}
+
 sub registerCommand{
   my $self = shift;
   my $command = shift;
@@ -472,6 +583,12 @@ sub _sendCommandCallback{
     
     if(!defined $self->{m_channels}->{$channel}){
       $connection->postMessage("/serverMessage \"default\" \"Channel does not exist\" ");
+      return
+    }
+    
+    if(!$self->{m_channels}->{$channel}->hasConnection($connection->identifier())){
+      $connection->postMessage("/serverMessage \"default\" \"You must join the Channel first\" ");
+      return
     }
     
     my $who  = $connection->username();
@@ -515,69 +632,38 @@ sub _createChannelCallback{
       $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for createChannel command\"");
       return;
     }
-
-    if($channel =~ m/[^\d\w]+/){
-      $connection->postMessage("/serverMessage \"default\" \"Channelname can only contain digits and letters\"");
-      return;
+    
+    if(!$self->createChannel($connection,$channel)){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_lastError}));
     }
-    
-    if(defined $self->{m_channels}{$channel}){
-      $connection->postMessage("/serverMessage \"default\" \"Channel $channel already exists\"");
-      return;
-    }
-    
-    my $event = Pms::Event::Channel->new($connection,$channel);
-    $self->emitSignal(create_channel_request => $event);
-    if($event->wasRejected()){
-      $connection->postMessage("/serverMessage \"default\" \"Can not create the channel: $channel Reason: $event->reason()\"");
-      return;
-    }
-    
-    $self->{m_channels}{$channel} = new Pms::Core::Channel($self,$channel);
-    
-    #let the user enter the channel
-    $self->{m_buildinCommands}->{'join'}->($connection,$channel);
-    
-    #tell all modules the channel was created
-    $event = new Pms::Event::Channel($connection,$channel);
-    $self->emitSignal(create_channel_success => $event);
-    
   }
 }
+
+
 
 sub _joinChannelCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
     my $connection = shift;
-    my $channel = shift;
+    my $channelName = shift;
     
     if(!defined $connection){
       #TODO add some error handling
       return;
     }
 
-    if(!defined $channel){
+    if(!defined $channelName){
       $connection->postMessage("/serverMessage \"default\" \"Wrong Parameters for join command\"");
       return;
     }
-
-    my $event = Pms::Event::Join->new($connection,$channel);
-    $self->emitSignal('join_channel_request' => $event);
-
-    if($event->wasRejected()){
-      if($Debug){
-        warn "Join was rejected, reason: ".$event->reason();
-      }
-      $connection->postMessage("/serverMessage \"default\" \"Join rejected: ".$event->reason()."\" ");
-      return;
+    
+    if(!defined $self->{m_channels}{$channelName}){
+      $connection->postMessage("/serverMessage \"default\" \"Channel ".$channelName." does not exist\" ");
     }
-
-    if(defined $self->{m_channels}{$channel}){
-      $self->{m_channels}{$channel}->addConnection($connection);
-      $self->emitSignal('join_channel_success' => $event);
-    }else{
-      $connection->postMessage("/serverMessage \"default\" \"Channel ".$channel." does not exist\" ");
+    
+    if(!$self->joinChannel($connection,$channelName)){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_lastError}));
     }
   }
 }
@@ -711,6 +797,4 @@ sub _changeChannelTopicCallback{
     $self->{m_channels}->{$channel}->setTopic($topic);
   }
 }
-
-
 1;

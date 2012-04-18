@@ -11,8 +11,10 @@ sub new{
   my $self  = $class->SUPER::new();
   bless($self,$class);
   
-  $self->{m_channel} = undef;
+  $self->{m_connection}  = shift;
+  $self->{m_channel} = shift;
   $self->{m_closing} = 0; #set this to true to indicate the channel is closing
+  
   return $self;
 }
 
@@ -24,8 +26,12 @@ sub isClosing{
   return $_[0]->{m_closing};
 }
 
-sub channel{
+sub channelName{
   return $_[0]->{m_channel};
+}
+
+sub connection{
+  return $_[0]->{m_connection};
 }
 
 1;

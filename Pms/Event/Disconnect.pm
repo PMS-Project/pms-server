@@ -14,4 +14,8 @@ sub new{
   $self->{m_connection} = undef;
   return $self;
 }
+
+sub connection{
+  return $_[0]->{m_connection};
+}
 1;

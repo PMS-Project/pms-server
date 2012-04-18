@@ -15,4 +15,16 @@ sub new{
   $self->{m_channel}    = shift;
   return $self;
 }
+
+sub channel{
+  return $_[0]->{m_channel};
+}
+
+sub channelName{
+  return $_[0]->{m_channel}->channelName();
+}
+
+sub connection{
+  return $_[0]->{m_connection};
+}
 1;

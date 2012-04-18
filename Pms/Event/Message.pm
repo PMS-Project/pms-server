@@ -16,4 +16,16 @@ sub new{
   $self->{m_message}    = shift;
   return $self;
 }
+
+sub connection{
+  return $_[0]->{m_connection};
+}
+
+sub channel{
+  return $_[0]->{m_channel};
+}
+
+sub message{
+  return $_[0]->{m_message};
+}
 1;
