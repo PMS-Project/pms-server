@@ -495,6 +495,9 @@ sub _newConnectionCallback{
 
       $self->emitSignal('client_connect_success' => $event);
       
+      #tell the client its nick
+      $connection->postMessage(Pms::Prot::Messages::nickChangeMessage("",$username));
+      
       #check if there is data available already
       if($connection->messagesAvailable()){
         $self->{m_dataAvailCallback}->($connection);
