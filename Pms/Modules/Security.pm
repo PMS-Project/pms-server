@@ -220,9 +220,7 @@ sub _clientConnectedCallback{
     
     my $connection = $eventType->connection();
     warn "Applying default Ruleset";
-    warn Dumper($self->_createDefaultRuleset());
     $self->{m_users}->{$connection->identifier()} = $self->_createDefaultRuleset();
-    warn "----------------------------------------";
     warn Dumper($self->{m_users}->{$connection->identifier()});
   };
 }

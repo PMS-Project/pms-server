@@ -80,10 +80,10 @@ sub addConnection {
                "object"     => $connection
   };
   
-  
   $self->{m_connections}->{$connection->identifier()} = $stuff;
   $connection->postMessage(Pms::Prot::Messages::openWindowMessage($self->{m_name}));
-  $connection->postMessage(Pms::Prot::Messages::newTopicMessage($self->{m_name},$self->{m_topic}));
+  $connection->postMessage(Pms::Prot::Messages::topicMessage($self->{m_name},$self->{m_topic}));
+  $connection->postMessage(Pms::Prot::Messages::userListMessage($self));
   $self->sendChannelMessage(Pms::Prot::Messages::joinedMessage($connection,$self));
 }
 
@@ -133,7 +133,7 @@ sub setTopic{
   my $topic = shift or die "Need New Topic";
   
   $self->{m_topic} = $topic;
-  $self->sendChannelMessage(Pms::Prot::Messages::newTopicMessage($self->{m_name},$self->{m_topic}));
+  $self->sendChannelMessage(Pms::Prot::Messages::topicMessage($self->{m_name},$self->{m_topic}));
 }
 
 sub topic {

@@ -75,7 +75,7 @@ sub serverMessage  {
   return "/serverMessage '$toChannel' '$message'";
 }
 
-sub newTopicMessage {
+sub topicMessage {
   my $channel = shift;
   my $topic   = shift;
   

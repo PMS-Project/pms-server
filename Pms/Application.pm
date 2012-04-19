@@ -96,7 +96,7 @@ sub new{
                                    'list' => $self->_listChannelCallback(),
                                    'nick' => $self->_changeNickCallback(),
                                    'users' => $self->_listUsersCallback(),
-                                   'topic' => $self->_changeChannelTopicCallback()
+                                   'topic' => $self->_topicCallback()
                                   );
 
   return $self;
@@ -542,6 +542,7 @@ sub invokeCommand{
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
     $self->{m_buildinCommands}->{$command{'name'}}->( $connection,@args );
+    return;
   }
   
   #now try the registered
@@ -560,6 +561,8 @@ sub invokeCommand{
     #command hash contains a reference to the arguments array
     my @args = @{$command{'args'}};
     $self->{m_commands}->{$command{'name'}}->( $connection,@args );
+  }else{
+    $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Unknown Command: ".$command{name}));
   }
 }
 
@@ -774,7 +777,7 @@ sub _listUsersCallback{
   }
 }
 
-sub _changeChannelTopicCallback{
+sub _topicCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
@@ -786,15 +789,36 @@ sub _changeChannelTopicCallback{
       return;
     }
     
-    if(!defined $channel || !defined $topic){
+    if(!defined $channel){
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Wrong Parameters for topic command"));
+      return;
     }
     
     if(!defined $self->{m_channels}->{$channel}){
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Channel $channel does not exist"));
-    }
+      return;
+    } 
     
-    $self->{m_channels}->{$channel}->setTopic($topic);
+    my $channelObj = $self->{m_channels}->{$channel};
+    
+    #if the user does not send a topic, he wants to know the current one
+    if(!defined $topic){
+      $connection->postMessage(Pms::Prot::Messages::topicMessage($channelObj->channelName(),$channelObj->topic()));
+    }else{
+      
+      my $event = Pms::Event::Topic->new($connection,$channel,$topic);
+      $self->emitSignal('change_topic_request' => $event);
+      
+      if($event->wasRejected()){
+        if($Debug){
+          warn "Change Topic was rejected, reason: ".$event->reason();
+        }
+        $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$event->reason()));
+        return;
+      }
+      $self->{m_channels}->{$channel}->setTopic($topic);
+      $self->emitSignal('change_topic_success' => $event);
+    }
   }
 }
 1;
