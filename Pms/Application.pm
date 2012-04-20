@@ -668,9 +668,9 @@ sub _joinChannelCallback{
       return;
     }
     
-    if(!defined $self->{m_channels}{$channelName}){
-      $connection->postMessage("/serverMessage \"default\" \"Channel ".$channelName." does not exist\" ");
-    }
+    #if(!defined $self->{m_channels}{$channelName}){
+    #  $connection->postMessage("/serverMessage \"default\" \"Channel ".$channelName." does not exist\" ");
+    #}
     
     if(!$self->joinChannel($connection,$channelName)){
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_lastError}));
