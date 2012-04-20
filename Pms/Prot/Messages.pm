@@ -72,7 +72,7 @@ sub serverMessage  {
   my $toChannel = shift;
   my $message   = shift;
   
-  return "/serverMessage '$toChannel' '$message'";
+  return "/serverMessage '$toChannel' \"$message\"";
 }
 
 sub topicMessage {
