@@ -530,6 +530,9 @@ sub _clientDisconnectCallback{
   return sub{
     my ($connection) = @_;
     
+    my $event = Pms::Event::Disconnect->new($connection);
+    $self->emitSignal('client_disconnect_success' => $event);
+    
     delete $self->{m_connections}->{$connection->identifier()};
     delete $self->{m_users}->{$connection->username()};
   }

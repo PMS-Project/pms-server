@@ -11,7 +11,7 @@ sub new{
   my $self  = $class->SUPER::new();
   bless($self,$class);
   
-  $self->{m_connection} = undef;
+  $self->{m_connection} = shift or die "Need Connection";
   return $self;
 }
 
