@@ -336,7 +336,10 @@ sub _basicNickChangeCallback{
       if(@{$rows} > 0){
         $eventType->connection()->postMessage(Pms::Prot::Messages::serverMessage("default","Registered Nickname, use the identify command to identify yourself."));
       }else{
-        $self->{m_parent}->changeNick($eventType->connection(), $eventType->newName());  
+       if($self->{m_parent}->changeNick($eventType->connection(), $eventType->newName()) == 0){
+          #a error happened
+          $eventType->connection()->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_parent}->{m_lastError}));
+        }    
       } 
     });
   }
