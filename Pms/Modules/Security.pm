@@ -395,6 +395,13 @@ sub _disconnectCallback{
   return sub{
     my $eventChain = shift;
     my $eventType  = shift;    
+    
+    my $conn = $eventType->connection();
+    
+    if(defined $self->{m_users}->{$conn->identifier()}){
+      warn "User disconnected, removing rights";
+      delete $self->{m_users}->{$conn->identifier()};
+    }
   };
 }
 
