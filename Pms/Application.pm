@@ -10,6 +10,7 @@ use Object::Event;
 
 use Pms::Core::Object;
 use Pms::Event::Connect;
+use Pms::Event::Disconnect;
 use Pms::Event::Message;
 use Pms::Event::Channel;
 use Pms::Event::Join;
