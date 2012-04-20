@@ -691,7 +691,7 @@ sub _leaveChannelCallback{
       return;
     }
     
-    my $event = Pms::Event::Leave->new($connection,$channel);
+    my $event = Pms::Event::Leave->new($connection,$self->{m_channels}->{$channel});
     $self->emitSignal('leave_channel_success' => $event);
     
     if(defined $self->{m_channels}{$channel}){
@@ -809,7 +809,7 @@ sub _topicCallback{
       $connection->postMessage(Pms::Prot::Messages::topicMessage($channelObj->channelName(),$channelObj->topic()));
     }else{
       
-      my $event = Pms::Event::Topic->new($connection,$channel,$topic);
+      my $event = Pms::Event::Topic->new($connection,$channelObj,$topic);
       $self->emitSignal('change_topic_request' => $event);
       
       if($event->wasRejected()){
