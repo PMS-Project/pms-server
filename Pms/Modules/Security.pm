@@ -163,6 +163,9 @@ sub channelRuleset (){
   my $self    = shift or die "Need Ref";
   my $ident   = shift or die "Need Ident";
   my $channel = shift or die "Need Channel";
+
+  warn "All User Rights:";
+  warn Dumper($self->{m_users});
   
   if (!defined $self->{m_users}->{$ident}){
       #if the user is not known in the structure we have to create the 
@@ -174,6 +177,7 @@ sub channelRuleset (){
   if (!defined $self->{m_users}->{$ident}->{channelRoles}->{$channel}){
       #if the channel is not known in the structure
       #we return a empty ruleset
+	warn "Returning empty Ruleset: $ident $channel";
       return {};
   }
   
@@ -241,7 +245,7 @@ sub _joinChannelRequestCallback{
     if(!defined $channelInfo){
       #this is a non persistent channel everyone can join it
       my %ruleset = %defaultChannelRuleset;
-      $self->setChannelRuleset($conn,$channel->channelName(),\%ruleset);
+      $self->setChannelRuleset($conn->identifier(),$channel->channelName(),\%ruleset);
       return;
     }
     
