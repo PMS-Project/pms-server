@@ -43,7 +43,7 @@ our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a ne
                  , 'change_nick_success' => 1        # A user has changed his nickname
                  , 'change_topic_request' => 1        # A user tries to change a channel topic
                  , 'change_topic_success' => 1        # A user has changed a channel topic
-                 , 'execute_command_request' =>      # A user tries to execute a custom command
+                 , 'execute_command_request' => 1     # A user tries to execute a custom command
                  );
   
 sub new{
