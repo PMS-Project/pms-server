@@ -497,7 +497,7 @@ sub _changeTopicRequestCallback{
     my $eventType  = shift;    
     
     my $connIdent = $eventType->connection()->identifier();
-    if(!$self->_hasChannelRole($connIdent,$eventType->channelName(),$eventType->role_change_topic)){
+    if(!$self->_hasChannelRole($connIdent,$eventType->channelName(),"role_change_topic")){
       $eventType->reject("You don't have the rights to change the Topic");
       $eventChain->stop_event;
     }
