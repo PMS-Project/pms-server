@@ -15,10 +15,10 @@ my @connectionProviders = (
 );
 
 my %baseDBHash = (
-  db_host     => "192.168.253.20",
+  db_host     => "localhost",
   db_database => "pms",
   db_user     => "pms",
-  db_pass     => "muhla"  
+  db_pass     => "secret"  
 );
 
 my @modules = (

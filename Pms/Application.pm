@@ -605,7 +605,7 @@ sub _sendCommandCallback{
     my $when = time();
     
     #TODO put who and when in the event
-    my $event = Pms::Event::Message->new($connection,$channel,$message);
+    my $event = Pms::Event::Message->new($connection,$channel,$message,$when);
     $self->emitSignal('message_send_request' => $event);
     
     if($event->wasRejected()){

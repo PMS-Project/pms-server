@@ -14,6 +14,7 @@ sub new{
   $self->{m_connection} = shift;
   $self->{m_channel}    = shift;
   $self->{m_message}    = shift;
+  $self->{m_when}       = shift;
   return $self;
 }
 
@@ -27,5 +28,9 @@ sub channel{
 
 sub message{
   return $_[0]->{m_message};
+}
+
+sub when{
+  return $_[0]->{m_when};
 }
 1;
