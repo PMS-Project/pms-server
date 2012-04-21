@@ -59,7 +59,8 @@ sub new{
   $self->{m_dbh} = new AnyEvent::DBI("DBI:mysql:$db:$host", $user, $pass,
                                    on_connect  => $self->_onDbConnectCallback(),
                                    on_error    => $self->_dbErrorCallback(),
-                                   exec_server => 1
+                                   exec_server => 1,
+                                   mysql_auto_reconnect => 1
   );
   
   warn "Security Module created";
