@@ -18,6 +18,11 @@
 package Pms::Prot::Netstring;
 
 use strict;
+use utf8;
+no bytes;
+
+use Data::Dumper;
+
 
 our $Debug = $ENV{'PMS_DEBUG'};
 our $lastError;
@@ -69,6 +74,7 @@ sub parse {
 
 sub serialize {
   my $value = shift;
+  
   my $netstring = length($value).":".$value.","; 
   if($Debug){
     warn "Sending netstring: ".$netstring;

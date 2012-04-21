@@ -30,6 +30,7 @@
 
 package Pms::Prot::Parser;
 use strict;
+use utf8;
 
 our $Debug = $ENV{'PMS_DEBUG'};
 

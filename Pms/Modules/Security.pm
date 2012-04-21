@@ -3,6 +3,7 @@
 package Pms::Modules::Security;
 
 use strict;
+use utf8;
 use Pms::Event::Connect;
 use Pms::Core::Connection;
 use Pms::Prot::Messages;
@@ -60,7 +61,8 @@ sub new{
                                    on_connect  => $self->_onDbConnectCallback(),
                                    on_error    => $self->_dbErrorCallback(),
                                    exec_server => 1,
-                                   mysql_auto_reconnect => 1
+                                   mysql_auto_reconnect => 1,
+                                   mysql_enable_utf8 => 1
   );
   
   warn "Security Module created";

@@ -17,6 +17,7 @@
 package Pms::Core::Object;
 
 use strict;
+use utf8;
 use Object::Event;
 use Scalar::Util;
 

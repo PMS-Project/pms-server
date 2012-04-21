@@ -3,6 +3,7 @@
 package Pms::Core::ConnectionProvider;
 
 use strict;
+use utf8;
 use Pms::Core::Object;
 
 our @ISA = qw(Pms::Core::Object);

@@ -2,6 +2,7 @@
 package Pms::Event::Connect;
 
 use strict;
+use utf8;
 use Pms::Event::Event;
 
 our @ISA = ("Pms::Event::Event");

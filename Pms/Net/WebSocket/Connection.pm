@@ -4,6 +4,7 @@ package Pms::Net::WebSocket::Connection;
 use Pms::Core::Connection;
 use Pms::Net::WebSocket::Backend;
 use strict;
+use utf8;
 
 our $Debug = $ENV{'PMS_DEBUG'};
 our @ISA = qw(Pms::Core::Connection);

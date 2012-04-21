@@ -3,6 +3,7 @@
 package PmsConfig;
 
 use strict;
+use utf8;
 use Data::Dumper;
 
 my @connectionProviders = (

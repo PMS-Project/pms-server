@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 package Pms::Event::Disconnect;
 use strict;
+use utf8;
 use Pms::Event::Event;
 
 

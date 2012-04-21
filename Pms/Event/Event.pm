@@ -2,6 +2,7 @@
 
 package Pms::Event::Event;
 use strict;
+use utf8;
 
 sub new{
   my $class = shift;

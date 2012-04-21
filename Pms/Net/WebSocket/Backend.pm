@@ -12,6 +12,7 @@
 package Pms::Net::WebSocket::Backend;
 
 use strict;
+use utf8;
 use Protocol::WebSocket::Handshake::Server;
 use Protocol::WebSocket::Frame;
 use AnyEvent::Handle;

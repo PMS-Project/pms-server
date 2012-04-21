@@ -3,6 +3,7 @@
 package Pms::Modules::Backlog;
 
 use strict;
+use utf8;
 use Pms::Event::Message;
 use Pms::Event::Join;
 use Pms::Event::Leave;
@@ -30,7 +31,8 @@ sub new{
                                    on_connect  => $self->_onDbConnectCallback(),
                                    on_error    => $self->_dbErrorCallback(),
                                    exec_server => 1,
-                                   mysql_auto_reconnect => 1
+                                   mysql_auto_reconnect => 1,
+                                   mysql_enable_utf8 => 1
   );
   warn "Backlog Module created";
   return $self;
@@ -128,8 +130,22 @@ sub _joinChannelSuccessCallback{
         
         $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),"BACKLOG-MODULE",time(),"-----------START BACKLOG------------"));
         if(@{$rows} > 0){
-          foreach my $curr ( @{$rows} ){          
-            $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),$curr->[0],$curr->[1],$curr->[2]));
+          foreach my $curr ( @{$rows} ){   
+            my $channel = $eventType->channelName();
+            my $who     = $curr->[0];
+            my $when    = $curr->[1];
+            my $what    = $curr->[2];
+            
+            if(utf8::is_utf8($what)){
+              warn "Reading From DB : utf8";
+            }else{
+              warn "Reading From DB : ZOOOONK";
+            }
+            
+            #utf8::decode( $who ) unless utf8::is_utf8( $who );
+            #utf8::decode( $when ) unless utf8::is_utf8( $when );
+                        
+            $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),$who,$when,$what));
           }
         }
         $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),"BACKLOG-MODULE",time(),"----------- END BACKLOG ------------"));

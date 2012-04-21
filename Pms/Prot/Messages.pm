@@ -3,6 +3,7 @@
 package Pms::Prot::Messages;
 
 use strict;
+use utf8;
 use Pms::Application;
 use Pms::Core::Connection;
 use Pms::Core::Channel;

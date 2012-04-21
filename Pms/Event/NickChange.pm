@@ -3,6 +3,7 @@
 package Pms::Event::NickChange;
 
 use strict;
+use utf8;
 use Pms::Event::Event;
 our @ISA = ("Pms::Event::Event");
 

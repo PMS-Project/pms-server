@@ -2,6 +2,7 @@
 
 package Pms::Core::Channel;
 use strict;
+use utf8;
 
 use Pms::Prot::Messages;
 

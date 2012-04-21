@@ -3,6 +3,7 @@
 package Pms::Modules::Database;
 
 use strict;
+use utf8;
 use AnyEvent::DBI;
 
 sub new{

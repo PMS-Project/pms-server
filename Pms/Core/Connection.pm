@@ -4,6 +4,7 @@ package Pms::Core::Connection;
 use Pms::Core::Object;
 use AnyEvent::Handle;
 use strict;
+use utf8;
 
 our @ISA = qw(Pms::Core::Object);
 

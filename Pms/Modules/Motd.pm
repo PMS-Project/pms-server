@@ -3,6 +3,7 @@
 package Pms::Modules::Motd;
 
 use strict;
+use utf8;
 use Pms::Event::Connect;
 
 sub new{

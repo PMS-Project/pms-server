@@ -3,6 +3,7 @@
 package Pms::Application;
 
 use strict;
+use utf8;
 use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket;
