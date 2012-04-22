@@ -39,7 +39,7 @@ my @modules = (
     config   => \%baseDBHash
   },
   {
-    name     => "Pms::Modules::Security",
+    name     => "Pms::Modules::Security::Module",
     requires => undef,
     config   => \%baseDBHash
   }

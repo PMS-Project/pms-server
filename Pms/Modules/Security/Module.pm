@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Pms::Modules::Security;
+package Pms::Modules::Security::Module;
 
 use strict;
 use utf8;
@@ -90,7 +90,7 @@ sub initialize{
   $self->{m_parent}->registerCommand("identify",$self->_identifyCallback());
   $self->{m_parent}->registerCommand("showRights",$self->_showRightsCallback());
   $self->{m_parent}->registerCommand("giveOp",$self->_giveChannelOpCallback());
-  
+  $self->{m_parent}->registerCommand("takeOp",$self->_takeChannelOpCallback());
   #load the settings from the database right after we entered the eventloop
   $self->{m_timer} = AnyEvent->timer (after => 0.1, cb => $self->_loadSettingsFromDbCallback());
   
@@ -503,9 +503,8 @@ sub _createChannelSuccessCallback{
     }
     
     my $connIdent = $eventType->connection()->identifier();
-    $self->setChannelRuleset($connIdent,$eventType->channelName(),{
-        role_channelAdmin => 1
-    });
+    my %ruleset   = (role_channelAdmin => 1);
+    $self->setChannelRuleset($connIdent,$eventType->channelName(),\%ruleset);
   };
 }
 
@@ -543,30 +542,75 @@ sub _giveChannelOpCallback{
     my $connIdent = $connection->identifier();
     
     if(!$self->_hasChannelRole($connIdent,$channel,"role_channelAdmin")){
-      $connection->postMessage(Pms::Prot::Messages("default","You don't have the rights to do that"));
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You don't have the rights to do that"));
       return;
     }
     
     my $otherConnection = $self->{m_parent}->nicknameToConnection($nickname);
     if(!defined $otherConnection){
-      $connection->postMessage(Pms::Prot::Messages("default","$nickname is not known"));
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","$nickname is not known"));
       return;
     }
     
     my $channelObj = $self->{m_parent}->channel($channel);
     if(!defined $channelObj){
-      $connection->postMessage(Pms::Prot::Messages("default",$self->{m_parent}->{m_lastError}));
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_parent}->{m_lastError}));
       return;
     }
     
     if(!$channelObj->hasConnection($otherConnection->identifier())){
-      $connection->postMessage(Pms::Prot::Messages("default","You can only give rights to a user IN the channel"));
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You can only give rights to a user IN the channel"));
       return;
     }
     
     warn "About to Set Roles";
     my %ruleset = %{$self->channelRuleset($otherConnection->identifier(),$channel)};
     $ruleset{role_channelAdmin} = 1;
+    warn Dumper(%ruleset);
+    $self->setChannelRuleset($otherConnection->identifier(),$channel,\%ruleset);
+  }
+}
+
+sub _takeChannelOpCallback{
+  my $self = shift;
+  return sub{
+    my $connection = shift;
+    my $channel = shift;
+    my $nickname = shift;
+    
+    my $connIdent = $connection->identifier();
+    
+    if(!$self->_hasChannelRole($connIdent,$channel,"role_channelAdmin")){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You don't have the rights to do that"));
+      return;
+    }
+    
+    my $otherConnection = $self->{m_parent}->nicknameToConnection($nickname);
+    if(!defined $otherConnection){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","$nickname is not known"));
+      return;
+    }
+    
+    my $channelObj = $self->{m_parent}->channel($channel);
+    if(!defined $channelObj){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_parent}->{m_lastError}));
+      return;
+    }
+    
+    if(!$channelObj->hasConnection($otherConnection->identifier())){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You can only take rights from a user IN the channel"));
+      return;
+    }
+    
+    warn "About to Revok Admin Roler";
+    my %ruleset = %{$self->channelRuleset($otherConnection->identifier(),$channel)};
+    delete $ruleset{role_channelAdmin};
+    
+    if(!keys(%ruleset)){
+      warn "Filling Empty Ruleset";
+      %ruleset = %defaultChannelRuleset;
+    }
+    
     warn Dumper(%ruleset);
     $self->setChannelRuleset($otherConnection->identifier(),$channel,\%ruleset);
   }
