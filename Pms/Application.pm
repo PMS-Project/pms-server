@@ -225,7 +225,7 @@ sub createUniqueNickname{
 
 =begin nd
   Function: nicknameToConnection
-    Creates and returns a Nickname that does not yet exist on the server
+    Returns the connection associated with the nickname
   
   Access:
     Public
@@ -428,6 +428,19 @@ sub createChannel{
   my $event = Pms::Event::Channel->new($connection,$channelName);
   $self->emitSignal(create_channel_success => $event);
   return 1;
+}
+
+sub channel{
+  my $self = shift or die "Need Ref";
+  my $channelName = shift or die "Need Channel Name";
+  
+  if(!defined $self->{m_channels}->{$channelName}){
+    $self->{m_lastError} = "Channel not known";
+    return undef;
+  }
+  
+  return $self->{m_channels}->{$channelName};
+  
 }
 
 sub registerCommand{

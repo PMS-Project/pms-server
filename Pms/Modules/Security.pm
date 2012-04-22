@@ -88,6 +88,8 @@ sub initialize{
     change_topic_request  => $self->_changeTopicRequestCallback()
   );
   $self->{m_parent}->registerCommand("identify",$self->_identifyCallback());
+  $self->{m_parent}->registerCommand("showRights",$self->_showRightsCallback());
+  $self->{m_parent}->registerCommand("giveOp",$self->_giveChannelOpCallback());
   
   #load the settings from the database right after we entered the eventloop
   $self->{m_timer} = AnyEvent->timer (after => 0.1, cb => $self->_loadSettingsFromDbCallback());
@@ -167,8 +169,8 @@ sub channelRuleset (){
   my $ident   = shift or die "Need Ident";
   my $channel = shift or die "Need Channel";
 
-  warn "All User Rights:";
-  warn Dumper($self->{m_users});
+  #warn "All User Rights:";
+  #warn Dumper($self->{m_users});
   
   if (!defined $self->{m_users}->{$ident}){
       #if the user is not known in the structure we have to create the 
@@ -521,4 +523,52 @@ sub _changeTopicRequestCallback{
   };
 }
 
+sub _showRightsCallback{
+  my $self = shift;
+  return sub{
+    my $connection = shift;
+    if(defined $self->{m_users}->{$connection->identifier()}){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",Dumper($self->{m_users}->{$connection->identifier()})));
+    }
+  }
+}
+
+sub _giveChannelOpCallback{
+  my $self = shift;
+  return sub{
+    my $connection = shift;
+    my $channel = shift;
+    my $nickname = shift;
+    
+    my $connIdent = $connection->identifier();
+    
+    if(!$self->_hasChannelRole($connIdent,$channel,"role_channelAdmin")){
+      $connection->postMessage(Pms::Prot::Messages("default","You don't have the rights to do that"));
+      return;
+    }
+    
+    my $otherConnection = $self->{m_parent}->nicknameToConnection($nickname);
+    if(!defined $otherConnection){
+      $connection->postMessage(Pms::Prot::Messages("default","$nickname is not known"));
+      return;
+    }
+    
+    my $channelObj = $self->{m_parent}->channel($channel);
+    if(!defined $channelObj){
+      $connection->postMessage(Pms::Prot::Messages("default",$self->{m_parent}->{m_lastError}));
+      return;
+    }
+    
+    if(!$channelObj->hasConnection($otherConnection->identifier())){
+      $connection->postMessage(Pms::Prot::Messages("default","You can only give rights to a user IN the channel"));
+      return;
+    }
+    
+    warn "About to Set Roles";
+    my %ruleset = %{$self->channelRuleset($otherConnection->identifier(),$channel)};
+    $ruleset{role_channelAdmin} = 1;
+    warn Dumper(%ruleset);
+    $self->setChannelRuleset($otherConnection->identifier(),$channel,\%ruleset);
+  }
+}
 1;
