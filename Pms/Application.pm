@@ -352,6 +352,11 @@ sub joinChannel{
   }
   
   my $channel = $self->{m_channels}{$channelName};
+  if($channel->hasConnection($connection->identifier())){
+    #we are already in the channel
+    $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You are already in the Channel $channelName"));
+    return 1;
+  }
   my $event = Pms::Event::Join->new($connection,$channel);
   if(!$force){
     $self->emitSignal('join_channel_request' => $event);
@@ -380,7 +385,7 @@ sub joinChannel{
     Public
     
   Parameters:
-    $connection  - The User connection Object
+    $connection  - The User connection Object (optional)
     $channelName - The Channel Name
     $force       - Don't ask for Permission (don't send the  create_channel_request event)
     
@@ -444,9 +449,9 @@ sub channel{
 }
 
 sub registerCommand{
-  my $self = shift;
-  my $command = shift;
-  my $cb = shift;
+  my $self = shift or die "Need Ref";
+  my $command = shift or die "Need Command";
+  my $cb = shift or die "Need Callback";
   
   if(!exists $self->{m_commands}->{$command}){
     $self->{m_commands}->{$command} = $cb;
@@ -477,7 +482,7 @@ sub _termSignalCallback{
 }
 
 sub _newConnectionCallback{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
 
   return sub{
     my $connProvider = shift;
@@ -522,7 +527,7 @@ sub _newConnectionCallback{
 }
 
 sub _dataAvailableCallback{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
   return sub {
         my ($connection) = @_;
         while($connection->messagesAvailable()){
@@ -531,7 +536,7 @@ sub _dataAvailableCallback{
           
           my %command = $self->{m_parser}->parseMessage($message);
           if(keys %command){
-            $self->invokeCommand($connection,%command);
+            $self->invokeCommand($connection,\%command);
           }else{
             warn "Empty ".$self->{m_parser}->{m_lastError};
             #do Error handling
@@ -541,7 +546,7 @@ sub _dataAvailableCallback{
 }
 
 sub _clientDisconnectCallback{
-  my $self = shift;
+  my $self = shift or die "Need Ref";
   return sub{
     my ($connection) = @_;
     
@@ -554,22 +559,23 @@ sub _clientDisconnectCallback{
 }
 
 sub invokeCommand{
-  warn "@_" if($Debug);
-  my ($self,$connection,%command) = @_;
+  my $self       = shift or die "Need Ref";
+  my $connection = shift or die "Need Connection Object";
+  my $command    = shift or die "Need Command";
   
   #first try to invoke build in commands
-  if(exists $self->{m_buildinCommands}->{$command{'name'}}){
-    warn "Invoking Command: ".$command{'name'} if($Debug);
+  if(exists $self->{m_buildinCommands}->{$command->{'name'}}){
+    warn "Invoking Command: ".$command->{'name'} if($Debug);
     #command hash contains a reference to the arguments array
-    my @args = @{$command{'args'}};
-    $self->{m_buildinCommands}->{$command{'name'}}->( $connection,@args );
+    my @args = @{$command->{'args'}};
+    $self->{m_buildinCommands}->{$command->{'name'}}->( $connection,@args );
     return;
   }
   
   #now try the registered
-  if(exists $self->{m_commands}->{$command{'name'}}){
+  if(exists $self->{m_commands}->{$command->{'name'}}){
     
-    my $event = Pms::Event::Command->new($command{'name'},$command{'args'});
+    my $event = Pms::Event::Command->new($command->{'name'},$command->{'args'});
     $self->emitSignal('execute_command_request' => $event);
 
     if($event->wasRejected()){
@@ -578,12 +584,12 @@ sub invokeCommand{
       return;
     }
     
-    warn "Invoking Custom Command: ".$command{'name'} if($Debug);
+    warn "Invoking Custom Command: ".$command->{'name'} if($Debug);
     #command hash contains a reference to the arguments array
-    my @args = @{$command{'args'}};
-    $self->{m_commands}->{$command{'name'}}->( $connection,@args );
+    my @args = @{$command->{'args'}};
+    $self->{m_commands}->{$command->{'name'}}->( $connection,@args );
   }else{
-    $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Unknown Command: ".$command{name}));
+    $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Unknown Command: ".$command->{name}));
   }
 }
 

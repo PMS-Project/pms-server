@@ -126,10 +126,9 @@ sub _joinChannelSuccessCallback{
         my $dbh = shift;
         my $rows = shift;
         my $rv = shift;
-      
-        
-        $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),"BACKLOG-MODULE",time(),"-----------START BACKLOG------------"));
+             
         if(@{$rows} > 0){
+          $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),"BACKLOG-MODULE",time(),"-----------START BACKLOG------------"));
           foreach my $curr ( @{$rows} ){   
             my $channel = $eventType->channelName();
             my $who     = $curr->[0];
@@ -138,8 +137,8 @@ sub _joinChannelSuccessCallback{
                         
             $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),$who,$when,$what));
           }
+          $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),"BACKLOG-MODULE",time(),"----------- END BACKLOG ------------"));
         }
-        $eventType->connection()->postMessage(Pms::Prot::Messages::chatMessage($eventType->channelName(),"BACKLOG-MODULE",time(),"----------- END BACKLOG ------------"));
     });
     
   };

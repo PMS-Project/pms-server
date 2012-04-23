@@ -8,20 +8,38 @@ use Pms::Application;
 use Pms::Core::Connection;
 use Pms::Core::Channel;
 
+sub escapeString {
+  my $string = shift;
+  
+  $string =~ s/\\/\\\\/; # Escape backslash
+  $string =~ s/\"/\\"/;
+  
+  warn "Escaped String: ".$string;
+  
+  return '"'.$string.'"';
+}
+
 sub chatMessage {
   my $to   = shift or die "Need a receiver";
   my $who  = shift or die "Need a username";
   my $when = shift or die "Need a when";
   my $message = shift or die "Need Message";
   
-  return "/message '$to' '$who' '$when' '$message' ";
+  $to      = escapeString($to);
+  $who     = escapeString($who);
+  $message = escapeString($message);
+  
+  return "/message $to $who $when $message ";
 }
 
 sub joinedMessage {
   my $connection = shift;
   my $channel    = shift;
   
-  my $msg = "/joined '".$channel->channelName()."' '".$connection->username()."'";
+  my $chnl = escapeString($channel->channelName());
+  my $usr  = escapeString($connection->username());
+  
+  my $msg = "/joined $chnl $usr";
   
   return $msg; 
 }
@@ -30,7 +48,9 @@ sub leftMessage {
   my $connection = shift;
   my $channel    = shift;
   
-  my $msg = "/left '".$channel->channelName()."' '".$connection->username()."'";
+  my $chnl = escapeString($channel->channelName());
+  my $usr  = escapeString($connection->username());
+  my $msg = "/left $chnl $usr";
   
   return $msg;
 }
@@ -39,17 +59,21 @@ sub nickChangeMessage {
   my $oldnick = shift;
   my $newnick = shift;
   
-  my $msg = "/nickchange '$oldnick' '$newnick'";
+  $oldnick = escapeString($oldnick);
+  $newnick = escapeString($newnick);
+  
+  my $msg = "/nickchange $oldnick $newnick";
 }
 
 sub userListMessage {
   my $channel    = shift;
   
   my @users = $channel->userList();
-  my $msg = "/userlist '".$channel->channelName()."' ";
+  my $chnl  = escapeString($channel->channelName());
+  my $msg = "/userlist $chnl ";
   
   foreach my $curr (@users){
-    $msg .= " '$curr'";
+    $msg .= " ".escapeString($curr);
   }
   
   return $msg;
@@ -63,7 +87,7 @@ sub channelListMessage {
   my $msg = "/channellist ";
   
   foreach my $curr (@channels){
-    $msg .= " '$curr' ";
+    $msg .= " ".escapeString($curr);
   }
   
   return $msg;
@@ -73,24 +97,32 @@ sub serverMessage  {
   my $toChannel = shift;
   my $message   = shift;
   
-  return "/serverMessage '$toChannel' \"$message\"";
+  $toChannel = escapeString($toChannel);
+  $message   = escapeString($message);
+  
+  return "/serverMessage $toChannel $message";
 }
 
 sub topicMessage {
   my $channel = shift;
   my $topic   = shift;
   
-  return "/channeltopic '$channel' '$topic'";
+  $channel = escapeString($channel);
+  $topic   = escapeString($topic);
+  
+  return "/channeltopic $channel $topic";
 }
 
 sub openWindowMessage {
   my $windowname = shift;
-  return "/openwindow '$windowname'";
+  $windowname = escapeString($windowname);
+  return "/openwindow $windowname";
 }
 
 sub closeWindowMessage {
   my $windowname = shift;
-  return "/closewindow '$windowname'";
+  $windowname = escapeString($windowname);
+  return "/closewindow $windowname";
 }
 
 1;

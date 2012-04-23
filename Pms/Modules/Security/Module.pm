@@ -240,6 +240,7 @@ sub _joinChannelRequestCallback{
       }else{
         #join the channel and force it
         if(!$self->{m_parent}->joinChannel($conn,$channelName,1)){
+          $userinfo->removeChannelRoleset($channelName);
           $conn->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_parent}->{m_lastError}));
         }
       }
