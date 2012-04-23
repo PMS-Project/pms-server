@@ -8,13 +8,15 @@ use Pms::Application;
 use Pms::Core::Connection;
 use Pms::Core::Channel;
 
+our $Debug = $ENV{'PMS_DEBUG'};
+
 sub escapeString {
   my $string = shift;
   
   $string =~ s/\\/\\\\/; # Escape backslash
   $string =~ s/\"/\\"/;
   
-  warn "Escaped String: ".$string;
+  warn "Escaped String: ".$string if($Debug);
   
   return '"'.$string.'"';
 }
