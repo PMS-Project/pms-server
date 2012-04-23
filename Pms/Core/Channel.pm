@@ -36,7 +36,7 @@ sub sendMessage{
   my $self = shift or die "Need Ref";
   my $who  = shift or die "Need a username";
   my $when = shift or die "Need a when";
-  my $message = shift or die "Need Message";
+  my $message = shift; #don't die here, might be a empty message
   
   
   my $keys = keys %{ $self->{m_connections} };

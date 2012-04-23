@@ -25,7 +25,7 @@ sub chatMessage {
   my $to   = shift or die "Need a receiver";
   my $who  = shift or die "Need a username";
   my $when = shift or die "Need a when";
-  my $message = shift or die "Need Message";
+  my $message = shift; #don't die here might be a empty message or 0
   
   $to      = escapeString($to);
   $who     = escapeString($who);
