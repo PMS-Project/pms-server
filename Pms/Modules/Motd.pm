@@ -5,6 +5,8 @@ package Pms::Modules::Motd;
 use strict;
 use utf8;
 use Pms::Event::Connect;
+use Pms::Prot::Messages;
+use Data::Dumper;
 
 sub new{
   my $class = shift;
@@ -15,6 +17,10 @@ sub new{
   $self->{m_config} = shift;
   $self->{m_eventGuard} = undef;
   $self->initialize();
+  
+  if(!defined $self->{m_config}){
+    die "Need a line to print";
+  }
   
   warn "Motd Module created";
   return $self;
@@ -32,10 +38,7 @@ sub initialize{
       my $eventChain = shift;
       my $eventType  = shift;
       
-      $eventType->connection()->postMessage("/serverMessage \"default\" \"----- Welcome to the concrete Muhlaserver -----\"");
-      $eventType->connection()->postMessage("/serverMessage \"default\" \"           Please Respect our Rules\"");
-      $eventType->connection()->postMessage("/serverMessage \"default\" \"    If not, the bad Muhlaman will catch you\"");
-      $eventType->connection()->postMessage("/serverMessage \"default\" \"            And Muhla your head off\"");
+      $eventType->connection()->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_config}));
     }
   );
 }

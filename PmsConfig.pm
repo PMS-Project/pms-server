@@ -36,7 +36,8 @@ my @modules = (
   {
     name     => "Pms::Modules::Motd",
     requires => undef,
-    config   => \%baseDBHash
+    config   => "----- Welcome to the P.M.S Testserver -----\n"
+               ."           Please Respect our Rules\n"
   },
   {
     name     => "Pms::Modules::Security::Module",

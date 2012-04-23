@@ -10,6 +10,7 @@ use Pms::Prot::Messages;
 use AnyEvent;
 use AnyEvent::DBI;
 use Data::Dumper;
+use Pms::Modules::Security::UserInfo;
 
 #the default global rules for a user
 our %defaultRuleset = (
@@ -126,67 +127,19 @@ sub shutdown{
   $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 
-sub setUserRuleset (){
-  my $self    = shift or die "Need Ref";
-  my $ident   = shift or die "Need Ident";
-  my $set     = shift or die "Need Ruleset";
-  
-  $self->{m_users}->{$ident} = $set;
-  warn "After User Set ".Dumper($self->{m_users}->{$ident});
-}
-
-sub userRuleset (){
+sub userInfo(){
   my $self    = shift or die "Need Ref";
   my $ident   = shift or die "Need Ident";
   
   if (!defined $self->{m_users}->{$ident}){
       #if the user is not known in the structure we have to create the 
       #default ruleset
-      $self->{m_users}->{$ident} = $self->_createDefaultRuleset();
+      $self->{m_users}->{$ident} = Pms::Modules::Security::UserInfo->new();
+      my %roles = %defaultRuleset;
+      $self->{m_users}->{$ident}->setGlobalRoleset(\%roles);
   }
   
-  return $self->{m_users}->{$ident}->{globalRoles};
-}
-
-sub setChannelRuleset(){
-  my $self    = shift or die "Need Ref";
-  my $ident   = shift or die "Need Ident";
-  my $channel = shift or die "Need Channel";
-  my $set     = shift or die "Need Ruleset";
-  
-  if (!defined $self->{m_users}->{$ident}){
-      #if the user is not known in the structure we have to create the 
-      #default ruleset
-      $self->{m_users}->{$ident} = $self->_createDefaultRuleset();
-  }
-  $self->{m_users}->{$ident}->{channelRoles}->{$channel} = $set;
-  
-  warn "After Channel Set ".Dumper($self->{m_users}->{$ident});
-}
-
-sub channelRuleset (){
-  my $self    = shift or die "Need Ref";
-  my $ident   = shift or die "Need Ident";
-  my $channel = shift or die "Need Channel";
-
-  #warn "All User Rights:";
-  #warn Dumper($self->{m_users});
-  
-  if (!defined $self->{m_users}->{$ident}){
-      #if the user is not known in the structure we have to create the 
-      #default ruleset
-      warn "Applying complete Default Ruleset";
-      $self->{m_users}->{$ident} = $self->_createDefaultRuleset();
-  }
-  
-  if (!defined $self->{m_users}->{$ident}->{channelRoles}->{$channel}){
-      #if the channel is not known in the structure
-      #we return a empty ruleset
-	warn "Returning empty Ruleset: $ident $channel";
-      return {};
-  }
-  
-  return $self->{m_users}->{$ident}->{channelRoles}->{$channel};
+  return $self->{m_users}->{$ident};
 }
 
 sub _onDbConnectCallback{
@@ -212,15 +165,6 @@ sub _dbErrorCallback{
   };
 }
 
-sub _createDefaultRuleset{
-  my %hash = %defaultRuleset;
-  return {
-    userId       => -1, #a regular user, did not use /identify yet
-    globalRoles  => \%hash,
-    channelRoles => {} #empty ruleset 
-  };
-}
-
 sub _clientConnectedCallback{
   my $self = shift;
   return sub{
@@ -229,7 +173,7 @@ sub _clientConnectedCallback{
     
     my $connection = $eventType->connection();
     warn "Applying default Ruleset";
-    $self->{m_users}->{$connection->identifier()} = $self->_createDefaultRuleset();
+    $self->userInfo($connection->identifier());
     warn Dumper($self->{m_users}->{$connection->identifier()});
   };
 }
@@ -249,12 +193,14 @@ sub _joinChannelRequestCallback{
     
     if(!defined $channelInfo){
       #this is a non persistent channel everyone can join it
-      my %ruleset = %defaultChannelRuleset;
-      $self->setChannelRuleset($conn->identifier(),$channel->channelName(),\%ruleset);
+      my %rules = %defaultChannelRuleset;
+      my $userinfo = $self->userInfo($connIdent);
+      $userinfo->setChannelRoleset($channel->channelName(),\%rules);
+      
       return;
     }
     
-    if($self->{m_users}->{$connIdent}->{userId} < 0){
+    if($self->{m_users}->{$connIdent}->id() < 0){
       $eventType->reject("You do not have the right to join this channel. Identify yourself before");
       $eventChain->stop_event;
       return;
@@ -267,7 +213,7 @@ sub _joinChannelRequestCallback{
     $eventChain->stop_event;
     
     my @args;
-    push(@args,$self->{m_users}->{$connIdent}->{userId});
+    push(@args,$self->{m_users}->{$connIdent}->id());
     push(@args,$channelInfo->{id});
 
     $self->{m_dbh}->exec ("Select roles.name from ".
@@ -280,17 +226,20 @@ sub _joinChannelRequestCallback{
       my $rows = shift;
       my $rv = shift;
       
-      my %ruleset = ();
+      my %roles = ();
       foreach my $curr (@{$rows}) {
-        $ruleset{$curr->[0]} = 1;
+        $roles{$curr->[0]} = 1;
       }
       
-      $self->setChannelRuleset($conn->identifier(),$channel->channelName(),\%ruleset);
-      if(!$self->_hasChannelRole($connIdent,$channel->channelName(),"role_join_channel")){
+      my $userinfo = $self->userInfo($conn->identifier());
+      my $channelName = $channel->channelName();
+      $userinfo->setChannelRoleset($channelName,\%roles);
+      if(!$userinfo->hasChannelRole($channelName,"role_join_channel")){
+        $userinfo->removeChannelRoleset($channelName);
         $conn->postMessage(Pms::Prot::Messages::serverMessage("default","You do not have the right to join this channel. Identify yourself before"));
       }else{
         #join the channel and force it
-        if(!$self->{m_parent}->joinChannel($conn,$channel->channelName(),1)){
+        if(!$self->{m_parent}->joinChannel($conn,$channelName,1)){
           $conn->postMessage(Pms::Prot::Messages::serverMessage("default",$self->{m_parent}->{m_lastError}));
         }
       }
@@ -312,10 +261,8 @@ sub _leaveChannelSuccessCallback{
       return;
     }
     
-    if(!defined $self->{m_users}->{$connIdent}->{channelRoles}->{$channel->channelName()}){
-      return;
-    }
-    delete $self->{m_users}->{$connIdent}->{channelRoles}->{$channel->channelName()};
+    my $userinfo = $self->userInfo($connIdent);
+    $userinfo->removeChannelRoleset($channel->channelName());
   };
 }
 
@@ -375,7 +322,7 @@ sub _identifyCallback{
       if(@{$rows} > 0){
         
         my $userId  = -1;
-        my $ruleset = $self->{m_users}->{$connection->identifier()};
+        my $userinfo = $self->userInfo($connection->identifier());
         my %globaleRoles = ();
         warn Dumper($rows);
         foreach my $curr ( @{$rows} ){          
@@ -383,13 +330,10 @@ sub _identifyCallback{
           $globaleRoles{$curr->[1]} = 1;
           $userId = $curr->[0];
         }
-        $ruleset->{userId}      = $userId;
-        $ruleset->{globalRoles} = \%globaleRoles;
+        $userinfo->setId($userId);
+        $userinfo->setGlobalRoleset(\%globaleRoles);
         
-        #save the ruleset in our array
-        $self->{m_users}->{$connection->identifier()} = $ruleset;
-        warn "Rules after Identify: ";
-        warn Dumper($ruleset);
+        warn Dumper($self->{m_users}->{$connection->identifier()});
         $self->{m_parent}->changeNick($connection, $nickname,1); #change nick and force the change
       }else{
         $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Wrong Username or Password, please try again."));
@@ -413,48 +357,6 @@ sub _disconnectCallback{
   };
 }
 
-sub _hasRole{
-  my $self = shift or die "Need Ref";
-  my $ident = shift or die "Need Ident";
-  my $role = shift or die "Need Role";
-  
-  my $ruleset = $self->{m_users}->{$ident};
-  warn "Checking for role: ".$role;
-  warn Dumper($ruleset);
-  if(!defined $ruleset){
-    #if(defined $defaultRuleset{$role}){
-    return 0;
-    #}
-  }
-  if(defined $ruleset->{globalRoles}->{role_admin} || defined $ruleset->{globalRoles}->{$role}){
-    return 1;
-  }
-  return 0;
-}
-
-sub _hasChannelRole{
-  my $self = shift or die "Need Ref";
-  my $ident = shift or die "Need Ident";
-  my $channelName = shift or die "Need ChannelName";
-  my $role = shift or die "Need Role";  
-  
-  my $ruleset = $self->channelRuleset($ident,$channelName); # $self->{m_users}->{$ident};
-  
-  warn "Checking for ChannelRole: ".$role." for IDENT: $ident";
-  warn Dumper($ruleset);
-  
-  if(!defined $ruleset){
-      return 0;
-  }
-  if(defined $self->userRuleset($ident)->{role_admin} 
-    || defined $ruleset->{role_channelAdmin}
-    || defined $ruleset->{$role})
-  {
-    return 1;
-  }
-  return 0;
-}
-
 sub _messageSendRequestCallback{
   my $self = shift;
   return sub{
@@ -463,8 +365,9 @@ sub _messageSendRequestCallback{
     
     my $connIdent = $eventType->connection()->identifier();
     my $channel   = $eventType->channel();
+    my $info      = $self->userInfo($connIdent);
     
-    if(!$self->_hasChannelRole($connIdent,$channel,"role_can_speak")){
+    if(!$info->hasChannelRole($channel,"role_can_speak")){
       $eventType->reject("You don't have the rights to speak in this Channel");
       $eventChain->stop_event;      
     }
@@ -477,13 +380,15 @@ sub _createChannelRequestCallback{
     my $eventChain = shift;
     my $eventType  = shift;    
     
+    
     #If there is no connection, this was called from the server
     if(!defined $eventType->connection()){
       return;
     }
     
     my $connIdent = $eventType->connection()->identifier();
-    if(!$self->_hasRole($connIdent,"role_create_channel")){
+    my $info      = $self->userInfo($connIdent);
+    if(!$info->hasGlobalRole("role_create_channel")){
       $eventType->reject("You don't have the rights to create Channels");
       $eventChain->stop_event;
     }
@@ -503,8 +408,9 @@ sub _createChannelSuccessCallback{
     }
     
     my $connIdent = $eventType->connection()->identifier();
+    my $userInfo  = $self->userInfo($connIdent);
     my %ruleset   = (role_channelAdmin => 1);
-    $self->setChannelRuleset($connIdent,$eventType->channelName(),\%ruleset);
+    $userInfo->setChannelRoleset($eventType->channelName(),\%ruleset);
   };
 }
 
@@ -515,7 +421,8 @@ sub _changeTopicRequestCallback{
     my $eventType  = shift;    
     
     my $connIdent = $eventType->connection()->identifier();
-    if(!$self->_hasChannelRole($connIdent,$eventType->channelName(),"role_change_topic")){
+    my $userInfo  = $self->userInfo($connIdent);
+    if(!$userInfo->hasChannelRole($eventType->channelName(),"role_change_topic")){
       $eventType->reject("You don't have the rights to change the Topic");
       $eventChain->stop_event;
     }
@@ -526,8 +433,9 @@ sub _showRightsCallback{
   my $self = shift;
   return sub{
     my $connection = shift;
-    if(defined $self->{m_users}->{$connection->identifier()}){
-      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",Dumper($self->{m_users}->{$connection->identifier()})));
+    my $userInfo   = $self->userInfo($connection->identifier());
+    if(defined $userInfo){
+      $connection->postMessage(Pms::Prot::Messages::serverMessage("default",Dumper($userInfo)));
     }
   }
 }
@@ -540,13 +448,15 @@ sub _giveChannelOpCallback{
     my $nickname = shift;
     
     my $connIdent = $connection->identifier();
+    my $userInfo  = $self->userInfo($connIdent);
     
-    if(!$self->_hasChannelRole($connIdent,$channel,"role_channelAdmin")){
+    if(!$userInfo->hasChannelRole($channel,"role_channelAdmin")){
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You don't have the rights to do that"));
       return;
     }
     
     my $otherConnection = $self->{m_parent}->nicknameToConnection($nickname);
+    
     if(!defined $otherConnection){
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default","$nickname is not known"));
       return;
@@ -564,10 +474,13 @@ sub _giveChannelOpCallback{
     }
     
     warn "About to Set Roles";
-    my %ruleset = %{$self->channelRuleset($otherConnection->identifier(),$channel)};
+    my $otherUserInfo   = $self->userInfo($otherConnection->identifier());
+    warn Dumper($otherUserInfo);
+    
+    my %ruleset = %{$otherUserInfo->channelRoleset($channel)};
     $ruleset{role_channelAdmin} = 1;
     warn Dumper(%ruleset);
-    $self->setChannelRuleset($otherConnection->identifier(),$channel,\%ruleset);
+    $otherUserInfo->setChannelRoleset($channel,\%ruleset);
   }
 }
 
@@ -579,8 +492,9 @@ sub _takeChannelOpCallback{
     my $nickname = shift;
     
     my $connIdent = $connection->identifier();
+    my $userInfo  = $self->userInfo($connIdent);
     
-    if(!$self->_hasChannelRole($connIdent,$channel,"role_channelAdmin")){
+    if(!$userInfo->hasChannelRole($channel,"role_channelAdmin")){
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default","You don't have the rights to do that"));
       return;
     }
@@ -603,16 +517,16 @@ sub _takeChannelOpCallback{
     }
     
     warn "About to Revok Admin Roler";
-    my %ruleset = %{$self->channelRuleset($otherConnection->identifier(),$channel)};
-    delete $ruleset{role_channelAdmin};
+    my $otherUserInfo   = $self->userInfo($otherConnection->identifier());
     
+    my %ruleset = %{$otherUserInfo->channelRoleset($channel)};
+    delete $ruleset{role_channelAdmin};
     if(!keys(%ruleset)){
       warn "Filling Empty Ruleset";
       %ruleset = %defaultChannelRuleset;
     }
-    
     warn Dumper(%ruleset);
-    $self->setChannelRuleset($otherConnection->identifier(),$channel,\%ruleset);
+    $otherUserInfo->setChannelRoleset($channel,\%ruleset);
   }
 }
 1;
