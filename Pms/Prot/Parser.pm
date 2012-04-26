@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+
 =begin nd
 
   Package: Pms::Prot::Parser
@@ -52,24 +53,24 @@ sub new{
 =begin nd
   Function: parseMessage
   
-  Takes the buffer and tries to read a command with all arguments out of it.
-  
-  If a error happened it will return undef and set the m_lastError member
-  which can be directly accessed from the caller.
-  
-  (start code)
-  my %command = $parser->parseMessage($buffer);
-  if($command != undef){
-      print "CommandName: ".$$command{command};
-  }else{
-    if($parser->{m_lastError}){
-      print "Error while parsing ";
+    Takes the buffer and tries to read a command with all arguments out of it.
+    
+    If a error happened it will return undef and set the m_lastError member
+    which can be directly accessed from the caller.
+    
+    (start code)
+    my %command = $parser->parseMessage($buffer);
+    if($command != undef){
+        print "CommandName: ".$$command{command};
+    }else{
+      if($parser->{m_lastError}){
+        print "Error while parsing ";
+      }
     }
-  }
-  (end)
-  
-  Access: 
-    Public
+    (end)
+    
+    Access: 
+      Public
   
   Parameters:
     buffer - The buffer that contains the message
@@ -151,7 +152,7 @@ sub parseMessage {
 =begin nd
 
   Function: _consumeWhitespace
-  cuts all whitespaces from the beginning of the buffer
+    cuts all whitespaces from the beginning of the buffer
   
   Access: 
     Private
@@ -238,7 +239,6 @@ sub _parseQuotedString {
 
 }
 
-
 =begin nd
   Function: _parseUnquotedString
     Tries to read a unquoted string from the buffer and returns it.
@@ -261,7 +261,19 @@ sub _parseUnquotedString {
   return $self->_parseString($message,$quotes);
 }
 
-
+=begin nd
+  Function: _parseString>
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _parseString {
   my $self = shift;
   my $message = shift;

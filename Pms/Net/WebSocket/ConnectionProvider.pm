@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w 
 
+=begin nd
+
+  Package: Pms::Net::WebSocket::ConnectionProvider
+  
+  Description:
+  
+=cut
+
 package Pms::Net::WebSocket::ConnectionProvider;
 
 use strict;
@@ -13,6 +21,13 @@ use AnyEvent::Socket;
 
 our @ISA = qw(Pms::Core::ConnectionProvider);
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    $xxxx - description
+=cut
 sub new{
   my $class = shift;
   my $self = $class->SUPER::new(@_);
@@ -34,6 +49,19 @@ sub new{
   return $self;         
 }
 
+=begin nd
+  Function: _newConnectionCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _newConnectionCallback{
   my $self = shift;
 
@@ -55,6 +83,19 @@ sub _newConnectionCallback{
   }
 }
 
+=begin nd
+  Function: _handshakeDoneCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _handshakeDoneCallback{
   my $self = shift;
   
@@ -74,6 +115,19 @@ sub _handshakeDoneCallback{
   }
 }
 
+=begin nd
+  Function: _disconnectWhileHandshake
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _disconnectWhileHandshake{
  my $self = shift;
   

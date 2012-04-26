@@ -1,11 +1,26 @@
 #!/usr/bin/perl -w 
 
+=begin nd
+
+  Package: Pms::Core::Channel
+  
+  Description:
+  
+=cut
+
 package Pms::Core::Channel;
 use strict;
 use utf8;
 
 use Pms::Prot::Messages;
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new {
   my $class = shift;
   my $self  = {};
@@ -20,11 +35,37 @@ sub new {
   return $self;
 }
 
+=begin nd
+  Function: channelName
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub channelName {
   my $self = shift or die "Need Ref";
   return $self->{m_name};
 }
 
+=begin nd
+  Function: _connectionForIdent
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _connectionForIdent{
   my $self = shift or die "Need Ref";
   my $key  = shift or die "Need Key";
@@ -32,6 +73,19 @@ sub _connectionForIdent{
   return $self->{m_connections}->{$key}->{"object"};
 }
 
+=begin nd
+  Function: sendMessage
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub sendMessage{
   my $self = shift or die "Need Ref";
   my $who  = shift or die "Need a username";
@@ -48,6 +102,19 @@ sub sendMessage{
   } 
 }
 
+=begin nd
+  Function: hasConnection
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub hasConnection{
   my $self = shift or die "Need Ref";  
   my $connId = shift or die "Need ConnectionId";
@@ -55,6 +122,19 @@ sub hasConnection{
   return (defined $self->{m_connections}->{$connId});
 }
 
+=begin nd
+  Function: sendChannelMessage
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub sendChannelMessage{
   my $self = shift or die "Need Ref";  
   my $message = shift or die "Need Message";
@@ -68,6 +148,19 @@ sub sendChannelMessage{
   } 
 }
 
+=begin nd
+  Function: addConnection
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub addConnection {
   my $self = shift;
   my $connection = shift;
@@ -88,6 +181,19 @@ sub addConnection {
   $self->sendChannelMessage(Pms::Prot::Messages::joinedMessage($connection,$self));
 }
 
+=begin nd
+  Function: _disconnectCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _disconnectCallback{
   my $self = shift;
   return sub{
@@ -96,6 +202,19 @@ sub _disconnectCallback{
   }
 }
 
+=begin nd
+  Function: removeConnection
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub removeConnection {
   my $self = shift;
   my $connection = shift;
@@ -116,6 +235,19 @@ sub removeConnection {
   $self->sendChannelMessage(Pms::Prot::Messages::leftMessage($connection,$self));
 }
 
+=begin nd
+  Function: userList
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub userList {
   my $self = shift or die "Need Ref";
   my @list;
@@ -129,6 +261,19 @@ sub userList {
   return @list;
 }
 
+=begin nd
+  Function: setTopic
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub setTopic{
   my $self = shift or die "Need Ref";
   my $topic = shift or die "Need New Topic";
@@ -137,6 +282,19 @@ sub setTopic{
   $self->sendChannelMessage(Pms::Prot::Messages::topicMessage($self->{m_name},$self->{m_topic}));
 }
 
+=begin nd
+  Function: topic
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub topic {
   return $_[0]->{m_topic};
 }

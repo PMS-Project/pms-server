@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w
 
+=begin nd
+
+  Package: Pms::Application
+  
+  Description:
+  
+=cut
+
 package Pms::Application;
 
 use strict;
@@ -47,7 +55,14 @@ our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a ne
                  , 'change_topic_success' => 1        # A user has changed a channel topic
                  , 'execute_command_request' => 1     # A user tries to execute a custom command
                  );
-  
+                 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    $xxxx - description
+=cut
 sub new{
   my $class = shift;
   my $self = $class->SUPER::new( );
@@ -104,6 +119,19 @@ sub new{
   return $self;
 }
 
+=begin nd
+  Function: execute
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub execute{
   my $self = shift or die "Need Ref";
   
@@ -114,6 +142,19 @@ sub execute{
   $self->{m_eventLoop} ->recv; #eventloop
 }
 
+=begin nd
+  Function: _loadConnectionProviders
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _loadConnectionProviders{
   my $self = shift or die "Need Ref";
   if(!defined $self->{m_config}->{connectionProviders}){
@@ -136,6 +177,19 @@ sub _loadConnectionProviders{
   }
 }
 
+=begin nd
+  Function: _loadModules
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _loadModules{
   my $self = shift or die "Need Ref";
   if(!defined $self->{m_config}->{modules}){
@@ -435,6 +489,19 @@ sub createChannel{
   return 1;
 }
 
+=begin nd
+  Function: channel
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub channel{
   my $self = shift or die "Need Ref";
   my $channelName = shift or die "Need Channel Name";
@@ -448,6 +515,19 @@ sub channel{
   
 }
 
+=begin nd
+  Function: registerCommand
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub registerCommand{
   my $self = shift or die "Need Ref";
   my $command = shift or die "Need Command";
@@ -460,11 +540,37 @@ sub registerCommand{
   warn "Command ".$command." already exists, did not register it"; 
 }
 
+=begin nd
+  Function: channels
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub channels{
   my $self = shift or die "Need Ref";
   return keys(%{ $self->{m_channels} });        
 }
 
+=begin nd
+  Function: sendBroadcast
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub sendBroadcast{
   my $self = shift or die "Need Ref";
   my $message = shift or die "Need Message";
@@ -473,6 +579,19 @@ sub sendBroadcast{
   }
 }
 
+=begin nd
+  Function: _termSignalCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _termSignalCallback{
   my $self = shift;
   return sub {
@@ -481,6 +600,19 @@ sub _termSignalCallback{
   }  
 }
 
+=begin nd
+  Function: _newConnectionCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _newConnectionCallback{
   my $self = shift or die "Need Ref";
 
@@ -526,6 +658,19 @@ sub _newConnectionCallback{
   }
 }
 
+=begin nd
+  Function: _dataAvailableCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _dataAvailableCallback{
   my $self = shift or die "Need Ref";
   return sub {
@@ -545,6 +690,19 @@ sub _dataAvailableCallback{
     }
 }
 
+=begin nd
+  Function: _clientDisconnectCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _clientDisconnectCallback{
   my $self = shift or die "Need Ref";
   return sub{
@@ -558,6 +716,19 @@ sub _clientDisconnectCallback{
   }
 }
 
+=begin nd
+  Function: invokeCommand
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub invokeCommand{
   my $self       = shift or die "Need Ref";
   my $connection = shift or die "Need Connection Object";
@@ -593,6 +764,19 @@ sub invokeCommand{
   }
 }
 
+=begin nd
+  Function: _sendCommandCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _sendCommandCallback{
   my $self    = shift;
   
@@ -646,6 +830,19 @@ sub _sendCommandCallback{
   }
 }
 
+=begin nd
+  Function: _createChannelCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _createChannelCallback{
   my $self = shift or die "Need Ref";
   
@@ -669,8 +866,19 @@ sub _createChannelCallback{
   }
 }
 
-
-
+=begin nd
+  Function: _joinChannelCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _joinChannelCallback{
   my $self = shift or die "Need Ref";
   
@@ -698,6 +906,19 @@ sub _joinChannelCallback{
   }
 }
 
+=begin nd
+  Function: _leaveChannelCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _leaveChannelCallback{
   my $self = shift or die "Need Ref";
   
@@ -725,6 +946,19 @@ sub _leaveChannelCallback{
   }  
 }
 
+=begin nd
+  Function: _listChannelCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _listChannelCallback{
   my $self = shift or die "Need Ref";
 
@@ -743,6 +977,19 @@ sub _listChannelCallback{
   }
 }
 
+=begin nd
+  Function: _changeNickCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _changeNickCallback{
   my $self = shift or die "Need Ref";
   
@@ -782,6 +1029,19 @@ sub _changeNickCallback{
   }
 }
 
+=begin nd
+  Function: _listUsersCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _listUsersCallback{
   my $self = shift or die "Need Ref";
   
@@ -804,6 +1064,19 @@ sub _listUsersCallback{
   }
 }
 
+=begin nd
+  Function: _topicCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _topicCallback{
   my $self = shift or die "Need Ref";
   

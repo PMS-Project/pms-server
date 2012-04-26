@@ -1,4 +1,13 @@
 #!/usr/bin/perl -w 
+
+=begin nd
+
+  Package: Pms::Net::WebSocket::Connection
+  
+  Description:
+  
+=cut
+
 package Pms::Net::WebSocket::Connection;
 
 use Pms::Core::Connection;
@@ -10,6 +19,13 @@ our $Debug = $ENV{'PMS_DEBUG'};
 our @ISA = qw(Pms::Core::Connection);
 our %PmsEvents = ('handshake_done' => 1);
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new{
   my $class = shift;
   my $self = $class->SUPER::new(@_);
@@ -21,18 +37,17 @@ sub new{
   return $self;         
 }
 
-
 =begin nd
   Function: _initializeHandle
-  
-  Initializes the internal Handle and Event Handling of the Object
+    <function_description>
   
   Access:
-  Private
-  
+    Private
+    
+  Parameters:
+    xxxx - description
+    
   Returns:
-  nothing
-  
 =cut
 sub _initializeHandle{
   my $self = shift;
@@ -47,6 +62,19 @@ sub _initializeHandle{
   $self->{m_handle}->push_read(websock_handshake => $self->_onHandshakeFinished());
 }
 
+=begin nd
+  Function: _onHandshakeFinished
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _onHandshakeFinished{
   my $self = shift or die "Need Ref";
   return sub{
@@ -68,6 +96,19 @@ sub _onHandshakeFinished{
   }
 }
 
+=begin nd
+  Function: _onErrorCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _onErrorCallback{
   my $self = shift or die "Need Ref";
   
@@ -79,6 +120,20 @@ sub _onErrorCallback{
     $_[0]->destroy;
   }
 }
+
+=begin nd
+  Function: _onEofCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _onEofCallback{
   my $self = shift or die "Need Ref";
   return sub {
@@ -87,6 +142,20 @@ sub _onEofCallback{
     $self->emitSignal('disconnect');
   }
 }
+
+=begin nd
+  Function: _readyRead
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _readyRead{
   my $self = shift or die "Need Ref";
   
@@ -98,6 +167,19 @@ sub _readyRead{
   
 }
 
+=begin nd
+  Function: postMessage
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub postMessage{
   my $self = shift or die "Need Ref";
   my $message = shift;
@@ -105,6 +187,19 @@ sub postMessage{
   $self->{m_handle}->push_write(websock_pms => $message);
 }
 
+=begin nd
+  Function: sendMessage
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub sendMessage{
   my $self = shift or die "Need Ref";
   my $message = shift;
@@ -113,11 +208,37 @@ sub sendMessage{
   syswrite($self->{m_handle}->fh,$frame);
 }
 
+=begin nd
+  Function: close
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub close{
   my $self = shift or die "Need Ref";
   $self->{m_handle}->push_shutdown();
 }
 
+=begin nd
+  Function: identifier
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub identifier{
   my $self = shift or die "We need a Reference";
   

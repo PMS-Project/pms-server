@@ -1,4 +1,13 @@
 #!/usr/bin/perl -w 
+
+=begin nd
+
+  Package: Pms::Core::Connection
+  
+  Description:
+  
+=cut
+
 package Pms::Core::Connection;
 
 use Pms::Core::Object;
@@ -13,6 +22,13 @@ our %PmsEvents = ('dataAvailable' => 1,
                   'change_username' => 1
                  );
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new {
   my $class = shift;
   my $self = $class->SUPER::new( );
@@ -28,35 +44,49 @@ sub new {
 }
 
 =begin nd
- Function: close
- 
- Closes the connection to the other side
- 
+  Function: close
+    Closes the connection to the other side
+  
+  Access:
+    Public
+    
+  Parameters:
+    
+  Returns:
+    
 =cut
 sub close{
   die "This function is virtual, it needs to be implemented in the subclass";  
 }
 
-
 =begin nd
- Function: identifier
- 
- Returns: 
- a unique identifier for the connection Object.
- Can be used in Hashes.
- 
+  Function: identifier
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    
+  Returns:
+    A unique identifier for the connection Object.
+    Can be used in Hashes.
 =cut
 sub identifier{
   die "This function is virtual, it needs to be implemented in the subclass";  
 }
 
-
 =begin nd
- Function: messagesAvailable
- 
- Returns: 
- The number of messages in the internal buffer
- 
+  Function: messagesAvailable
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    
+  Returns:
+    The number of messages in the internal buffer
 =cut
 sub messagesAvailable{
   my $self = shift or die "Need Ref";
@@ -67,13 +97,16 @@ sub messagesAvailable{
 }
 
 =begin nd
- Function: nextMessage
- 
- Removes the next Message from the internal Buffer and returns it
- 
- Returns: 
- The next message
- 
+  Function: nextMessage
+    Removes the next Message from the internal Buffer and returns it
+  
+  Access:
+    Public
+    
+  Parameters:
+    
+  Returns:
+    The next message
 =cut
 sub nextMessage{
   my $self = shift or die "Need Ref";
@@ -83,46 +116,56 @@ sub nextMessage{
 }
 
 =begin nd
- Function: sendMessage
- 
- Directly sends a message to the client, bypassing
- the write queue
- 
- Parameters:
-    message - The message to be sent
- 
- Note:
- Do not use this, most of the time you want to use
- postMessage instead. 
+  Function: sendMessage
+    Directly sends a message to the client, bypassing
+    the write queue
+  
+  Access:
+    Public
+    
+  Parameters:
+    
+  Returns:
+  
+  Note:
+    Do not use this, most of the time you want to use 
+    postMessage instead.
 =cut
 sub sendMessage{
   die "This function is virtual, it needs to be implemented in the subclass";
 }
 
 =begin nd
- Function: postMessage
- 
- Enqueues the message into the internal write queue
- 
- Parameters:
+  Function: postMessage
+    Enqueues the message into the internal write queue
+  
+  Access:
+    Public
+    
+  Parameters:
     message - The message to be sent
- 
+    
+  Returns:
+
 =cut
 sub postMessage{
   die "This function is virtual, it needs to be implemented in the subclass";
 }
 
 =begin nd
- Function: setUsername
- 
- Changes the username to a new value.
- 
- Warning:
-    This does NOT check if the user exists in the server
- 
- Parameters:
+  Function: setUsername
+    Changes the username to a new value.
+  
+  Access:
+    Public
+    
+  Parameters:
     username - The new username
- 
+    
+  Returns:
+    
+  Note:
+    This does NOT check if the user exists in the server
 =cut
 sub setUsername{
   my $self = shift or die "Need Ref";
@@ -135,10 +178,16 @@ sub setUsername{
 }
 
 =begin nd
- Function: username
- 
- Returns: 
- The username associated with this connection
+  Function: username
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    
+  Returns:
+    The username associated with this connection
 =cut
 sub username{
   return $_[0]->{m_user};

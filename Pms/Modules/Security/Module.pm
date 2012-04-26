@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w
 
+=begin nd
+
+  Package: Pms::Modules::Security::Module
+  
+  Description:
+  
+=cut
+
 package Pms::Modules::Security::Module;
 
 use strict;
@@ -42,6 +50,13 @@ our %defaultChannelRuleset = (
 #  } 
 #);
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new{
   my $class = shift;
   my $self  = {};
@@ -70,11 +85,30 @@ sub new{
   return $self;
 }
 
+=begin nd
+  Destructor: DESTROY
+    Initializes the Object
+    
+  Parameters:
+=cut
 sub DESTROY{
   my $self = shift;
   $self->shutdown();
 }
 
+=begin nd
+  Function: initialize
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub initialize{
   my $self = shift;
   $self->{m_eventGuard} = $self->{m_parent}->connect( 
@@ -97,6 +131,19 @@ sub initialize{
   
 }
 
+=begin nd
+  Function: _loadSettingsFromDbCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _loadSettingsFromDbCallback(){
   my $self = shift or die "Need Ref";
   return sub{
@@ -121,12 +168,38 @@ sub _loadSettingsFromDbCallback(){
   }
 }
 
+=begin nd
+  Function: shutdown
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub shutdown{
   my $self = shift;
   warn "Shutting Down";
   $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 
+=begin nd
+  Function: userInfo
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub userInfo(){
   my $self    = shift or die "Need Ref";
   my $ident   = shift or die "Need Ident";
@@ -142,6 +215,19 @@ sub userInfo(){
   return $self->{m_users}->{$ident};
 }
 
+=begin nd
+  Function: _onDbConnectCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _onDbConnectCallback{
   my $self = shift;
   return sub{
@@ -158,6 +244,19 @@ sub _onDbConnectCallback{
   };
 }
 
+=begin nd
+  Function: _dbErrorCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _dbErrorCallback{
   my $self = shift;
   return sub{
@@ -165,6 +264,19 @@ sub _dbErrorCallback{
   };
 }
 
+=begin nd
+  Function: _clientConnectedCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _clientConnectedCallback{
   my $self = shift;
   return sub{
@@ -178,6 +290,19 @@ sub _clientConnectedCallback{
   };
 }
 
+=begin nd
+  Function: _joinChannelRequestCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _joinChannelRequestCallback{
   my $self = shift;
   return sub{
@@ -245,6 +370,19 @@ sub _joinChannelRequestCallback{
   };
 }
 
+=begin nd
+  Function: _leaveChannelSuccessCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _leaveChannelSuccessCallback{
   my $self = shift;
   return sub{
@@ -264,6 +402,19 @@ sub _leaveChannelSuccessCallback{
   };
 }
 
+=begin nd
+  Function: _basicNickChangeCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _basicNickChangeCallback{
   my $self = shift;
   return sub{
@@ -295,6 +446,19 @@ sub _basicNickChangeCallback{
   }
 }
 
+=begin nd
+  Function: _identifyCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _identifyCallback{
   my $self = shift;
   return sub{
@@ -336,6 +500,19 @@ sub _identifyCallback{
   }
 }
 
+=begin nd
+  Function: _disconnectCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _disconnectCallback{
   my $self = shift;
   return sub{
@@ -351,6 +528,19 @@ sub _disconnectCallback{
   };
 }
 
+=begin nd
+  Function: _messageSendRequestCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _messageSendRequestCallback{
   my $self = shift;
   return sub{
@@ -368,6 +558,19 @@ sub _messageSendRequestCallback{
   };
 }
 
+=begin nd
+  Function: _createChannelRequestCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _createChannelRequestCallback{
   my $self = shift;
   return sub{
@@ -390,6 +593,19 @@ sub _createChannelRequestCallback{
   };
 }
 
+=begin nd
+  Function: _createChannelSuccessCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _createChannelSuccessCallback{
   my $self = shift;
   return sub{
@@ -408,6 +624,19 @@ sub _createChannelSuccessCallback{
   };
 }
 
+=begin nd
+  Function: _changeTopicRequestCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _changeTopicRequestCallback{
   my $self = shift;
   return sub{
@@ -423,6 +652,19 @@ sub _changeTopicRequestCallback{
   };
 }
 
+=begin nd
+  Function: _showRightsCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _showRightsCallback{
   my $self = shift;
   return sub{
@@ -434,6 +676,19 @@ sub _showRightsCallback{
   }
 }
 
+=begin nd
+  Function: _giveChannelOpCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _giveChannelOpCallback{
   my $self = shift;
   return sub{
@@ -478,6 +733,19 @@ sub _giveChannelOpCallback{
   }
 }
 
+=begin nd
+  Function: _takeChannelOpCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _takeChannelOpCallback{
   my $self = shift;
   return sub{

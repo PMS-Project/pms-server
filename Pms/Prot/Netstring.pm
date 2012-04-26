@@ -14,7 +14,9 @@
   [len]:[string],
   
   A better documentation can be found at: http://cr.yp.to/proto/netstrings.txt
+
 =cut
+
 package Pms::Prot::Netstring;
 
 use strict;
@@ -27,6 +29,19 @@ use Data::Dumper;
 our $Debug = $ENV{'PMS_DEBUG'};
 our $lastError;
 
+=begin nd
+  Function: parse
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub parse {
   my $handle = shift;
   my $buffer = shift;
@@ -72,6 +87,19 @@ sub parse {
   return undef;
 }
 
+=begin nd
+  Function: serialize
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub serialize {
   my $value = shift;
   

@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w
 
+=begin nd
+
+  Package: Pms::Core::ConnectionProvider
+  
+  Description:
+  
+=cut
+
 package Pms::Core::ConnectionProvider;
 
 use strict;
@@ -9,6 +17,13 @@ use Pms::Core::Object;
 our @ISA = qw(Pms::Core::Object);
 our %PmsEvents = ('connectionAvailable' => 1);
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new {
   my $class = shift;
   my $self = $class->SUPER::new( );
@@ -22,6 +37,19 @@ sub new {
   
 }
 
+=begin nd
+  Function: nextConnection
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub nextConnection{
   my $self = shift or die "No Ref";
   
@@ -29,6 +57,19 @@ sub nextConnection{
   return $connection;
 }
 
+=begin nd
+  Function: connectionAvailable
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub connectionsAvailable{
   my $self = shift or die "No Ref";
   my $count = @{ $self->{m_connectionQueue} };

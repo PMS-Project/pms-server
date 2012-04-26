@@ -1,11 +1,26 @@
 #!/usr/bin/perl -w
 
+=begin nd
+
+  Package: Pms::Modules::Stats
+  
+  Description:
+  
+=cut
+
 package Pms::Modules::Stats;
 
 use strict;
 use utf8;
 use AnyEvent::DBI;
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new{
   my $class = shift;
   my $self  = {};
@@ -20,11 +35,30 @@ sub new{
   return $self;
 }
 
+=begin nd
+  Destructor: DESTROY
+    Initializes the Object
+    
+  Parameters:
+=cut
 sub DESTROY{
   my $self = shift;
   $self->shutdown();
 }
 
+=begin nd
+  Function: initialize
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub initialize{
   my $self = shift;
   
@@ -37,6 +71,19 @@ sub initialize{
   #);    
 }
 
+=begin nd
+  Function: shutdown
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub shutdown{
   my $self = shift;
   warn "Shutting Down";

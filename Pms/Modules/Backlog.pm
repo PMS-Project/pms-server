@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w
 
+=begin nd
+
+  Package: Pms::Modules::Backlog
+  
+  Description:
+  
+=cut
+
 package Pms::Modules::Backlog;
 
 use strict;
@@ -13,6 +21,13 @@ use AnyEvent;
 use AnyEvent::DBI;
 use Data::Dumper;
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new{
   my $class = shift;
   my $self  = {};
@@ -43,6 +58,19 @@ sub DESTROY{
   $self->shutdown();
 }
 
+=begin nd
+  Function: _onDbConnectCallback
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _onDbConnectCallback{
   my $self = shift;
   return sub{

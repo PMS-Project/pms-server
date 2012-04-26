@@ -26,6 +26,13 @@ our %PmsEvents = ('connectionAvailable' => 1);
 
 our $Debug = $ENV{'PMS_DEBUG'};
 
+=begin nd
+  Constructor: new
+    Initializes the Object
+    
+  Parameters:
+    xxxx - description
+=cut
 sub new {
   my $class = shift;
   my $self  = $class->SUPER::new( );
@@ -34,6 +41,19 @@ sub new {
   return $self;
 }
 
+=begin nd
+  Function: connect
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub connect {
   my $self = shift;
   my @args = @_;
@@ -59,6 +79,19 @@ sub connect {
   $self->reg_cb(@_);
 }
 
+=begin nd
+  Function: emitSignal
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub emitSignal {
   my $self = shift;
   my $signal = shift;
@@ -73,6 +106,19 @@ sub emitSignal {
   return $self->event($signal => @_);
 }
 
+=begin nd
+  Function: disconnect
+    <function_description>
+  
+  Access:
+    Public
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub disconnect {
   my $self = shift;
   my $guard = shift;
@@ -80,6 +126,19 @@ sub disconnect {
   $self->unreg_cb($guard);
 }
 
+=begin nd
+  Function: _hasEvent
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _hasEvent{
   my $self = shift;
   my $eventName = shift;
@@ -89,6 +148,19 @@ sub _hasEvent{
   return $self->_searchEvent($eventName,@currClasses);
 }
 
+=begin nd
+  Function: _searchEvent
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _searchEvent{
   my $self = shift;
   my $event = shift;
@@ -114,6 +186,19 @@ sub _searchEvent{
   return 0;
 }
 
+=begin nd
+  Function: _getSuperClasses
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _getSuperClasses{
   my $self = shift;
   my $class = shift;
@@ -125,6 +210,19 @@ sub _getSuperClasses{
   return @classes;
 }
 
+=begin nd
+  Function: _getEvents
+    <function_description>
+  
+  Access:
+    Private
+    
+  Parameters:
+    xxxx - description
+    
+  Returns:
+    xxxx
+=cut
 sub _getEvents{
   my $self = shift;
   my $class = shift;
