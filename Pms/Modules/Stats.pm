@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Pms::Modules::Database;
+package Pms::Modules::Stats;
 
 use strict;
 use utf8;
@@ -16,18 +16,8 @@ sub new{
   $self->{m_eventGuard} = undef;
   $self->initialize();
   
-  warn "Motd Module created";
+  warn "Stats Module created";
   return $self;
-}
-
-sub createHandle{
-  my $self = shift or die "Need Ref";
-  return new AnyEvent::DBI('DBI:mysql:pms', 'pms', 'secret');
-}
-
-sub closeHandle{
-  my $self = shift or die "Need Ref";
-  my $hdl  = shift or die "Need Handle to close it";
 }
 
 sub DESTROY{
@@ -37,7 +27,14 @@ sub DESTROY{
 
 sub initialize{
   my $self = shift;
-
+  
+  #$self->{m_parent}->connect( 
+  #  client_connect_success => $self->_clientConnectedCallback(),
+   # client_disconnect_success => $self->_disconnectCallback(),
+   # message_send_success  => $self->_messageSendSuccessCallback(),
+   # join_channel_success  => $self->_joinChannelSuccessCallback(),
+   # leave_channel_success => $self->_leaveChannelSuccessCallback()
+  #);    
 }
 
 sub shutdown{

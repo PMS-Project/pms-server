@@ -13,8 +13,8 @@ our $Debug = $ENV{'PMS_DEBUG'};
 sub escapeString {
   my $string = shift;
   
-  $string =~ s/\\/\\\\/; # Escape backslash
-  $string =~ s/\"/\\"/;
+  $string =~ s/\\/\\\\/g; # Escape backslash
+  $string =~ s/\"/\\"/g;
   
   warn "Escaped String: ".$string if($Debug);
   

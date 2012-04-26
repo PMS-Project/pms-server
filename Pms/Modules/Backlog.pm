@@ -71,7 +71,7 @@ sub initialize{
   
   #deleting old Backlogs
   my @args;
-  $self->{m_dbh}->exec ("DELETE from mod_backlog where 1;"
+  $self->{m_dbh}->exec ("CALL mod_backlog_emptyTable();"
   , @args
   , sub{
     return;
@@ -103,7 +103,7 @@ sub  _messageSendSuccessCallback{
     push(@args,$eventType->channel());
     push(@args,$eventType->message());
 
-    $self->{m_dbh}->exec ("INSERT INTO mod_backlog (who,`when`,channel,what) VALUES (?,?,?,?);"
+    $self->{m_dbh}->exec ("CALL mod_backlog_write(?,?,?,?);"
     , @args
     , sub{
       return;
@@ -120,7 +120,7 @@ sub _joinChannelSuccessCallback{
     
     my @args;
     push(@args,$eventType->channelName());
-    $self->{m_dbh}->exec ("SELECT who,`when`,what from mod_backlog where channel=? order by `when`;"
+    $self->{m_dbh}->exec ("CALL mod_backlog_get(?,10);"
     , @args
     , sub{
         my $dbh = shift;
@@ -153,7 +153,7 @@ sub _channelCloseSuccessCallback{
     my @args;
     push(@args,$eventType->channelName());
 
-    $self->{m_dbh}->exec ("DELETE from mod_backlog where channel=?;"
+    $self->{m_dbh}->exec ("CALL mod_backlog_delChannel(?);"
     , @args
     , sub{
       return;

@@ -3,7 +3,7 @@
 package Pms::Net::WebSocket::ConnectionProvider;
 
 use strict;
-use utf8;
+use utf8; 
 use Pms::Core::ConnectionProvider;
 use Pms::Net::WebSocket::Connection;
 

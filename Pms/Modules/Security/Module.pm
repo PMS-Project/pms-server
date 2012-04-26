@@ -101,7 +101,7 @@ sub _loadSettingsFromDbCallback(){
   my $self = shift or die "Need Ref";
   return sub{
     delete $self->{m_timer};
-    $self->{m_dbh}->exec ("SELECT id,name,topic from mod_security_channels;", (), sub{
+    $self->{m_dbh}->exec ("CALL mod_security_getChannels();", (), sub{
       my $dbh = shift;
       my $rows = shift;
       my $rv = shift;
@@ -216,10 +216,7 @@ sub _joinChannelRequestCallback{
     push(@args,$self->{m_users}->{$connIdent}->id());
     push(@args,$channelInfo->{id});
 
-    $self->{m_dbh}->exec ("Select roles.name from ".
-                          "mod_security_user_to_channelRole as usrToRoles, ".
-                          "mod_security_channelRoles as roles ".
-                          "where usrToRoles.userRef = ? and usrToRoles.channelRef = ? and usrToRoles.roleRef = roles.id;"
+    $self->{m_dbh}->exec ("CALL mod_security_getChannelRoles(?,?);"
     , @args
     , sub{
       my $dbh = shift;
@@ -309,11 +306,7 @@ sub _identifyCallback{
     push(@args,$nickname);
     push(@args,$password);
     
-    my $select = "Select users.id as userId,roles.name as roleName from mod_security_users as users , ".
-                 "mod_security_user_to_roles as usrToRoles, ".
-                 "mod_security_roles as roles ".
-                 "where users.id = usrToRoles.userRef and usrToRoles.roleRef = roles.id ".
-                 "and users.username = ? and users.password = ?";
+    my $select = "CALL mod_security_getUserWithRoles(?,?)";
 
     $self->{m_dbh}->exec ($select, @args, sub{
       my $dbh = shift;
@@ -517,7 +510,7 @@ sub _takeChannelOpCallback{
       return;
     }
     
-    warn "About to Revok Admin Roler";
+    warn "About to Revoke Admin Role";
     my $otherUserInfo   = $self->userInfo($otherConnection->identifier());
     
     my %ruleset = %{$otherUserInfo->channelRoleset($channel)};

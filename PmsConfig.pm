@@ -24,7 +24,7 @@ my %baseDBHash = (
 
 my @modules = (
   {
-    name     => "Pms::Modules::Database",
+    name     => "Pms::Modules::Stats",
     requires => undef,
     config   => \%baseDBHash
   },
