@@ -5,6 +5,7 @@
   Package: Pms::Event::NickChange
   
   Description:
+    This Event is fired when a user tries to change his nick
   
 =cut
 
@@ -20,7 +21,9 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connection - the <Pms::Core::Connection> object doing the nickchange
+    oldname    - the old username
+    newname    - the new username
 =cut
 sub new{
   my $class = shift;
@@ -35,15 +38,13 @@ sub new{
 
 =begin nd
   Function: newName
-    <function_description>
+    The new nickname the user tries to switch to
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - new username
 =cut
 sub newName{
   my $self = shift or die "Need Ref";
@@ -52,15 +53,13 @@ sub newName{
 
 =begin nd
   Function: oldName
-    <function_description>
+    The current name of the user
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - the current name
 =cut
 sub oldName{
   my $self = shift or die "Need Ref";
@@ -69,7 +68,7 @@ sub oldName{
 
 =begin nd
   Function: connection
-    <function_description>
+    The connection object of the user
   
   Access:
     Public
@@ -77,7 +76,7 @@ sub oldName{
   Parameters:
     
   Returns:
-    xxxx
+    ref - <Pms::Core::Connection> the connection object associated with the user
 =cut
 sub connection{
   my $self = shift or die "Need Ref";

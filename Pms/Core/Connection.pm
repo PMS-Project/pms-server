@@ -5,6 +5,8 @@
   Package: Pms::Core::Connection
   
   Description:
+  Represents the connection of a chatuser.
+  
   
 =cut
 
@@ -16,6 +18,12 @@ use utf8;
 
 our @ISA = qw(Pms::Core::Object);
 
+=begin nd
+  Variable: %PmsEvents
+  
+  Description:
+  See <Pms::Core::Object>
+=cut
 our %PmsEvents = ('dataAvailable' => 1,
                   'disconnect' => 1,
                   'error' => 1,
@@ -23,11 +31,41 @@ our %PmsEvents = ('dataAvailable' => 1,
                  );
 
 =begin nd
+  Signal: dataAvailable
+  
+  Description:
+    is emitted when new data is available in the buffer
+  
+  Signal: disconnect
+  
+  Description:
+    is emitted when the socket closes the connection
+  
+  Signal: error
+  
+  Description:
+    is emitted when there is a error in the connection
+  
+  Signal: change_username
+  
+  Description:
+    is emitted when the user changes his name
+  
+  Parameters:
+    $olname - the old username
+    $newname - the new username
+=cut
+
+
+
+=begin nd
   Constructor: new
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    $fh   - The filedescriptor of the connected socket
+    $host - The hostname
+    $port - The port number
 =cut
 sub new {
   my $class = shift;
@@ -50,10 +88,8 @@ sub new {
   Access:
     Public
     
-  Parameters:
-    
-  Returns:
-    
+  Emits Signal:
+    diconnect
 =cut
 sub close{
   die "This function is virtual, it needs to be implemented in the subclass";  
@@ -61,7 +97,8 @@ sub close{
 
 =begin nd
   Function: identifier
-    <function_description>
+    This returns a identifier that uniquely identifies
+    the connection object for use in a hash.
   
   Access:
     Public
@@ -78,7 +115,7 @@ sub identifier{
 
 =begin nd
   Function: messagesAvailable
-    <function_description>
+    Checks if messages are watiting in the queue
   
   Access:
     Public
@@ -124,9 +161,8 @@ sub nextMessage{
     Public
     
   Parameters:
+    $message - data to be sent to the user
     
-  Returns:
-  
   Note:
     Do not use this, most of the time you want to use 
     postMessage instead.
@@ -138,6 +174,7 @@ sub sendMessage{
 =begin nd
   Function: postMessage
     Enqueues the message into the internal write queue
+    and returns immediately
   
   Access:
     Public
@@ -159,6 +196,9 @@ sub postMessage{
   Access:
     Public
     
+  Emits Signal:   
+    change_username($oldname,$newname)
+    
   Parameters:
     username - The new username
     
@@ -179,7 +219,7 @@ sub setUsername{
 
 =begin nd
   Function: username
-    <function_description>
+    Gets the username of the connection object
   
   Access:
     Public

@@ -5,6 +5,8 @@
   Package: Pms::Modules::Security::UserInfo
   
   Description:
+    This class represents the userinformation in the security modul.
+    This includes the user database id and the rolesets the user posseses.
   
 =cut
 
@@ -13,9 +15,6 @@ package Pms::Modules::Security::UserInfo;
 =begin nd
   Constructor: new
     Initializes the Object
-    
-  Parameters:
-    xxxx - description
 =cut
 sub new{
   my $class = shift;
@@ -31,15 +30,13 @@ sub new{
 
 =begin nd
   Function: id
-    <function_description>
+    Reads the userid
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    int - the user id from the database
 =cut
 sub id{
   return $_[0]->{m_id};
@@ -47,15 +44,13 @@ sub id{
 
 =begin nd
   Function: setId
-    <function_description>
+    Sets the userid
   
   Access:
     Public
     
   Parameters:
-    
-  Returns:
-    xxxx
+    $id - the new userid
 =cut
 sub setId{
   $_[0]->{m_id} = $_[1];
@@ -63,16 +58,15 @@ sub setId{
 
 =begin nd
   Function: setChannelRoleset
-    <function_description>
+    overwrites the roleset for a channel with 
+    the new one
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $channel - the name of the channel
+    $roleset - the new roleset hash
 =cut
 sub setChannelRoleset {
   my $self = shift or die "Need Ref";;
@@ -84,16 +78,16 @@ sub setChannelRoleset {
 
 =begin nd
   Function: channelRoleset
-    <function_description>
+    Reads the channels roleset hash
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $channel - the channel name
     
   Returns:
-    xxxx
+    hashref - the hash containing the roles
 =cut
 sub channelRoleset{
   my $self = shift or die "Need Ref";
@@ -108,16 +102,14 @@ sub channelRoleset{
 
 =begin nd
   Function: setGlobalRoleset
-    <function_description>
+    overwrites the global roleset with the new
+    hash
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $roleset - the new roleset
 =cut
 sub setGlobalRoleset {
   my $self = shift or die "Need Ref";;
@@ -128,16 +120,13 @@ sub setGlobalRoleset {
 
 =begin nd
   Function: globalRoleset
-    <function_description>
+    Reads the users global roleset
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    hashref - the hash containing the roleset
 =cut
 sub globalRoleset{
   my $self = shift or die "Need Ref";
@@ -147,16 +136,18 @@ sub globalRoleset{
 
 =begin nd
   Function: hasChannelRole
-    <function_description>
+    Checks if the user has a specific role
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $channel - the channel name
+    $role    - the name of the role we are looking for
     
   Returns:
-    xxxx
+    1 - for true
+    0 - for false
 =cut
 sub hasChannelRole {
   my $self = shift or die "Need Ref";
@@ -178,16 +169,14 @@ sub hasChannelRole {
 
 =begin nd
   Function: addChannelRole
-    <function_description>
+    adds a role to a channel roleset
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $channel - the channel we want to add the role to
+    $role    - the name of the role we want to add
 =cut
 sub addChannelRole {
   my $self = shift or die "Need Ref";;
@@ -202,16 +191,14 @@ sub addChannelRole {
 
 =begin nd
   Function: removeChannelRole
-    <function_description>
+    Removes a role from a channel roleset
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $channel - the channel we want to remove the role from 
+    $role    - the role we want to remove
 =cut
 sub removeChannelRole {
   my $self = shift or die "Need Ref";;
@@ -226,16 +213,15 @@ sub removeChannelRole {
 
 =begin nd
   Function: removeChannelRoleset
-    <function_description>
+    removes a complete channel roleset from the internal
+    hash. The user has no more rights in the channel after
+    this operation
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $channel - the channel name
 =cut
 sub removeChannelRoleset {
   my $self = shift or die "Need Ref";;
@@ -249,16 +235,17 @@ sub removeChannelRoleset {
 
 =begin nd
   Function: hasGlobalRole
-    <function_description>
-  
+    checks if the user has a global role
+    
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $role - the role we want to check
     
   Returns:
-    xxxx
+    0 - for false
+    1 - for true
 =cut
 sub hasGlobalRole {
   my $self = shift or die "Need Ref";
@@ -274,16 +261,13 @@ sub hasGlobalRole {
 
 =begin nd
   Function: addGlobalRole
-    <function_description>
+    Adds a role to the global roleset of the user
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $role - the role we want to add
 =cut
 sub addGlobalRole {
   my $self = shift;
@@ -294,16 +278,13 @@ sub addGlobalRole {
 
 =begin nd
   Function: removeGlobalRole
-    <function_description>
+    removes a role from the users global roleset
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $role - the role we want to remove
 =cut
 sub removeGlobalRole {
   my $self = shift;

@@ -5,7 +5,9 @@
   Package: Pms::Event::Command
   
   Description:
-  
+    This Event is fired when a user tries to 
+    execute a command registered from a module.
+    Its not emitted for buildin commands.
 =cut
 
 package Pms::Event::Command;
@@ -21,7 +23,8 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    name - the name of the command
+    args - the arguments to the command
 =cut
 sub new{
   my $class = shift;
@@ -33,6 +36,34 @@ sub new{
   $self->{m_args} = shift;
   
   return $self;
+}
+
+=begin nd
+  Function: name
+    Gets the name of the command
+  
+  Access:
+    Public
+    
+  Returns:
+    a *string* containing the command name
+=cut
+sub name{
+  return $_[0]->{m_name};
+}
+
+=begin nd
+  Function: args
+    Gets the command parameters
+  
+  Access:
+    Public
+    
+  Returns:
+    a *array-ref* to the command params
+=cut
+sub args{
+  return $_[0]->{m_args};
 }
 
 1;

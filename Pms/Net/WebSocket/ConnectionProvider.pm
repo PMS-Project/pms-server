@@ -26,7 +26,8 @@ our @ISA = qw(Pms::Core::ConnectionProvider);
     Initializes the Object
     
   Parameters:
-    $xxxx - description
+    parent - the <Pms::Application> object
+    config - the module config hash   
 =cut
 sub new{
   my $class = shift;
@@ -51,16 +52,11 @@ sub new{
 
 =begin nd
   Function: _newConnectionCallback
-    <function_description>
+    Creates a callback, that handles every incoming connection and enqueues it
+    in the internal connection list.
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _newConnectionCallback{
   my $self = shift;
@@ -85,16 +81,12 @@ sub _newConnectionCallback{
 
 =begin nd
   Function: _handshakeDoneCallback
-    <function_description>
+    Creates a callback that is called when a pending handle has finished its
+    handshake. Only handles that finished the websocket handshake will be shown
+    as available.
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _handshakeDoneCallback{
   my $self = shift;
@@ -117,16 +109,11 @@ sub _handshakeDoneCallback{
 
 =begin nd
   Function: _disconnectWhileHandshake
-    <function_description>
-  
+    Creates a callback that is executed when a handle 
+    disconnects in between the handshake, this will cleanup the 
+    ressources
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _disconnectWhileHandshake{
  my $self = shift;

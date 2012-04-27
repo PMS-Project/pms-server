@@ -5,7 +5,13 @@
   Package: Pms::Event::Event
   
   Description:
-  
+    This is the base class for all events fired in the PMS application.
+    
+    A receiver can stop lots of the events, but if doing so you have to set a message containing the 
+    reason with the <reject> member function. 
+    
+    Otherwise the <Pms::Application> object will not recognize that the event
+    was rejected.
 =cut
 
 package Pms::Event::Event;
@@ -15,9 +21,6 @@ use utf8;
 =begin nd
   Constructor: new
     Initializes the Object
-    
-  Parameters:
-    xxxx - description
 =cut
 sub new{
   my $class = shift;
@@ -31,15 +34,13 @@ sub new{
 
 =begin nd
   Function: reject
-    <function_description>
+    Sets the reject flag to true, and assigns a error message
   
   Access:
     Public
     
   Parameters:
-    
-  Returns:
-    xxxx
+    reason - a string describing the reason of the reject
 =cut
 sub reject{
   my $self = shift;
@@ -49,15 +50,14 @@ sub reject{
 
 =begin nd
   Function: wasRejected
-    <function_description>
+    Reads the rejected flag
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    0 - if the event was not rejected
+    1 - if it was rejected
 =cut
 sub wasRejected{
   my $self = shift;
@@ -66,7 +66,7 @@ sub wasRejected{
 
 =begin nd
   Function: reason
-    <function_description>
+    Reads the reject reason
   
   Access:
     Public
@@ -74,7 +74,8 @@ sub wasRejected{
   Parameters:
     
   Returns:
-    xxxx
+    *undef* - if the events wasn't rejected
+    *string* - containing the reason if it was
 =cut
 sub reason{
   my $self = shift;

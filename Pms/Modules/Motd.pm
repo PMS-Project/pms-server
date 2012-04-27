@@ -5,7 +5,9 @@
   Package: Pms::Modules::Motd
   
   Description:
-  
+    The Motd module is a example implementation of 
+    a module. It just sends a welcome message to every new 
+    user who connects to the server.
 =cut
 
 package Pms::Modules::Motd;
@@ -21,7 +23,8 @@ use Data::Dumper;
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    parent - the <Pms::Application> object
+    config - the module config hash
 =cut
 sub new{
   my $class = shift;
@@ -43,7 +46,7 @@ sub new{
 
 =begin nd
   Destructor: DESTROY
-    Initializes the Object
+    destoys the Object and cleans up its ressources
     
   Parameters:
 =cut
@@ -54,16 +57,11 @@ sub DESTROY{
 
 =begin nd
   Function: initialize
-    <function_description>
+    Called by the constructor, initializes the module
+    and connects to all the required signals and events
   
   Access:
     Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub initialize{
   my $self = shift;
@@ -79,16 +77,11 @@ sub initialize{
 
 =begin nd
   Function: shutdown
-    <function_description>
+    Cleans up the modules resources.
+    Is automatically called by the destructor
   
   Access:
     Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub shutdown (){
   my $self = shift;

@@ -5,7 +5,7 @@
   Package: Pms::Event::Message
   
   Description:
-  
+    This event is fired when a user tries to send a message
 =cut
 
 package Pms::Event::Message;
@@ -20,7 +20,10 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connection - the <Pms::Core::Connection> object sending the message
+    channel    - the receiver (channel-name) of the message
+    message    - the message itself
+    when       - a unixtimestamp when we received the message
 =cut
 sub new{
   my $class = shift;
@@ -36,15 +39,13 @@ sub new{
 
 =begin nd
   Function: connection
-    <function_description>
+    The connection object
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    ref - The <Pms::Core::Connection> object
 =cut
 sub connection{
   return $_[0]->{m_connection};
@@ -52,15 +53,13 @@ sub connection{
 
 =begin nd
   Function: channel
-    <function_description>
+    The name of the receiving channel
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - the channel name
 =cut
 sub channel{
   return $_[0]->{m_channel};
@@ -68,15 +67,13 @@ sub channel{
 
 =begin nd
   Function: message
-    <function_description>
+    the message to be sent to the channel
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - the message itself
 =cut
 sub message{
   return $_[0]->{m_message};
@@ -84,7 +81,7 @@ sub message{
 
 =begin nd
   Function: when
-    <function_description>
+    The unixtimestamp when the message entered the server
   
   Access:
     Public
@@ -92,7 +89,7 @@ sub message{
   Parameters:
     
   Returns:
-    xxxx
+    int - the unix timestamp
 =cut
 sub when{
   return $_[0]->{m_when};

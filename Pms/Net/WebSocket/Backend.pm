@@ -4,9 +4,14 @@
 
   Package: Pms::Net::WebSocket::Backend
   
-  To use the code in the Package it just has to be imported. It will automatically
-  register read and write functions to AnyEvent::Handle so we don't have to care
+  This module registeres custom read and write to the AnyEvent framework.
+  This code is not intended for direct use.
+  
+  To use the code in the Package it just has to be imported. 
+  
+  It will automatically register read and write functions to AnyEvent::Handle so we don't have to care
   about how the Handles internally read the Packages from the Socket.
+  
   That makes it easy to plug in another Protocol easily.
 
 =cut
@@ -23,7 +28,13 @@ use Pms::Prot::Netstring;
 our $Debug = $ENV{'PMS_DEBUG'};
 
 
-
+=begin nd
+  Function: websock_handshake
+  
+  Description:
+    Registers a read type callback to the AnyEvent framework
+    This callback handles the websocket handshake
+=cut
 AnyEvent::Handle::register_read_type websock_handshake => sub{
   my $hdl = shift;
   my $cb  = shift; 
@@ -59,6 +70,20 @@ AnyEvent::Handle::register_read_type websock_handshake => sub{
   }
 };
 
+=begin nd
+  Function: websock_pms:read
+  
+  Description:
+    Registers a read type callback to the AnyEvent framework
+    This callback handles the reading of the low-level Netstring
+    protocol of pms.
+    
+    It basically just appends the data to a internal buffer
+    until it can read the full netstring. 
+    
+    When a full netstring was received it executes the
+    callback function.
+=cut
 AnyEvent::Handle::register_read_type websock_pms => sub{
   my $hdl = shift;
   my $cb  = shift;
@@ -111,6 +136,14 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
   }
 };
 
+=begin nd
+  Function: websock_pms:write
+  
+  Description:
+    Registers a write type callback to the AnyEvent framework
+    Basically it just wraps the message in a netstring and the netstring
+    in the WebSocket frame and pushed it to the client.
+=cut
 AnyEvent::Handle::register_write_type websock_pms => sub {
   if($Debug){
     warn "Writing Websocket";

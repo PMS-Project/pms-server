@@ -5,7 +5,8 @@
   Package: Pms::Prot::Messages
   
   Description:
-  
+    This module contains all messages that the server can send to the client.
+    This makes it easy to change the message on one point in the application.
 =cut
 
 package Pms::Prot::Messages;
@@ -20,16 +21,17 @@ our $Debug = $ENV{'PMS_DEBUG'};
 
 =begin nd
   Function: escapeString
-    <function_description>
+    Escapes quotes and escape characters
+    in a string and surrounds it with quotes.
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $string - the string that needs escaping
     
   Returns:
-    xxxx
+   string - the escaped and quoted string
 =cut
 sub escapeString {
   my $string = shift;
@@ -44,16 +46,19 @@ sub escapeString {
 
 =begin nd
   Function: chatMessage
-    <function_description>
+    Creates the text representation of a chatmessage
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $to - the receivers name
+    $who - the senders name
+    $when - the unix timetamp of the message
+    $message - the message itself
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub chatMessage {
   my $to   = shift or die "Need a receiver";
@@ -70,16 +75,17 @@ sub chatMessage {
 
 =begin nd
   Function: joinedMessage
-    <function_description>
+    Creates the text representation of a joined message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $connection - the <Pms::Core::Connection> object that joined a channel
+    $channel    - the <Pms::Core::Channel> object
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub joinedMessage {
   my $connection = shift;
@@ -95,16 +101,17 @@ sub joinedMessage {
 
 =begin nd
   Function: leftMessage
-    <function_description>
+    Creates the text representation of a left message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $connection - the <Pms::Core::Connection> object that left a channel
+    $channel    - the <Pms::Core::Channel> object
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub leftMessage {
   my $connection = shift;
@@ -119,16 +126,17 @@ sub leftMessage {
 
 =begin nd
   Function: nickChangeMessage
-    <function_description>
+    Creates the text representation of a nickChangeMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $oldnick - the users old nickname
+    $newnick - the users new nickname
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub nickChangeMessage {
   my $oldnick = shift;
@@ -142,16 +150,16 @@ sub nickChangeMessage {
 
 =begin nd
   Function: userListMessage
-    <function_description>
+    Creates the text representation of a userListMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $channel - the <Pms::Core::Channel> object we want to create the userlist from
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub userListMessage {
   my $channel    = shift;
@@ -169,16 +177,16 @@ sub userListMessage {
 
 =begin nd
   Function: channelListMessage
-    <function_description>
+    Creates the text representation of a channelListMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $server - the <Pms::Application> object
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub channelListMessage {
   my $server = shift;
@@ -196,16 +204,17 @@ sub channelListMessage {
 
 =begin nd
   Function: serverMessage
-    <function_description>
+    Creates the text representation of a serverMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $toChannel - the receiver channel name
+    $message   - the message to be sent
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub serverMessage  {
   my $toChannel = shift;
@@ -219,16 +228,17 @@ sub serverMessage  {
 
 =begin nd
   Function: topicMessage
-    <function_description>
+    Creates the text representation of a topicMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $channel - the channel name
+    $topic   - the new topic of the channel
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub topicMessage {
   my $channel = shift;
@@ -242,16 +252,16 @@ sub topicMessage {
 
 =begin nd
   Function: openWindowMessage
-    <function_description>
+    Creates the text representation of a openWindowMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $windowname - the id of the window, the client application should create
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub openWindowMessage {
   my $windowname = shift;
@@ -261,16 +271,16 @@ sub openWindowMessage {
 
 =begin nd
   Function: closeWindowMessage
-    <function_description>
+    Creates the text representation of a closeWindowMessage message
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $windowname - the id of the window, the client application should delete
     
   Returns:
-    xxxx
+    string - the message
 =cut
 sub closeWindowMessage {
   my $windowname = shift;

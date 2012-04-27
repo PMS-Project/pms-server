@@ -262,14 +262,16 @@ sub _parseUnquotedString {
 }
 
 =begin nd
-  Function: _parseString>
-    <function_description>
+  Function: _parseString
+    The actual parseString function which can handle different types
+    of quoting
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
+    $message - the read buffer
+    $quotes  - the type of quotes that should be matched
     
   Returns:
     xxxx

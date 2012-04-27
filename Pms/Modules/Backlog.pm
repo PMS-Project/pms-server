@@ -5,7 +5,9 @@
   Package: Pms::Modules::Backlog
   
   Description:
-  
+    This module implements a Backlog functionality for the pms server.
+    A backlog is a chat history for users who just joined the channel,
+    so they know about the current conversations.
 =cut
 
 package Pms::Modules::Backlog;
@@ -26,7 +28,8 @@ use Data::Dumper;
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    parent - the <Pms::Application> object
+    config - the module config hash
 =cut
 sub new{
   my $class = shift;
@@ -60,16 +63,14 @@ sub DESTROY{
 
 =begin nd
   Function: _onDbConnectCallback
-    <function_description>
+    Returns a function that is called when the
+    connection to the database is finished
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _onDbConnectCallback{
   my $self = shift;
@@ -87,6 +88,17 @@ sub _onDbConnectCallback{
   };
 }
 
+=begin nd
+  Function: _dbErrorCallback
+    Returns a function that is called when there
+    was a error in communication with the database
+  
+  Access:
+    Private
+    
+  Returns:
+    sub - a callback function
+=cut
 sub _dbErrorCallback{
   my $self = shift;
   return sub{
@@ -94,6 +106,14 @@ sub _dbErrorCallback{
   };
 }
 
+=begin nd
+  Function: initialize
+    Called by the constructor, initializes the module
+    and connects to all the required signals and events
+  
+  Access:
+    Public
+=cut
 sub initialize{
   my $self = shift;
   
@@ -113,12 +133,33 @@ sub initialize{
   );
 }
 
+=begin nd
+  Function: shutdown
+    Cleans up the modules resources.
+    Is automatically called by the destructor
+  
+  Access:
+    Public
+=cut
 sub shutdown{
   my $self = shift;
   warn "Shutting Down";
   $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 
+=begin nd
+  Function: _messageSendSuccessCallback
+    Creates the callback that is used to 
+    handle <Pms::Event::Message> events.
+    
+    The callback stores every message in the database.
+  
+  Access:
+    Private
+    
+  Returns:
+    sub - a callback function
+=cut
 sub  _messageSendSuccessCallback{
   my $self = shift or die "Need Ref";
   return sub{
@@ -140,6 +181,20 @@ sub  _messageSendSuccessCallback{
   };
 }
 
+=begin nd
+  Function: _joinChannelSuccessCallback
+    Creates the callback that is used to 
+    handle <Pms::Event::Join> events.
+    
+    The callback tries to find the last 100 messages 
+    from the channel and send it to the user.
+  
+  Access:
+    Private
+    
+  Returns:
+    sub - a callback function
+=cut
 sub _joinChannelSuccessCallback{
   my $self = shift or die "Need Ref";
   return sub{
@@ -148,7 +203,7 @@ sub _joinChannelSuccessCallback{
     
     my @args;
     push(@args,$eventType->channelName());
-    $self->{m_dbh}->exec ("CALL mod_backlog_get(?,10);"
+    $self->{m_dbh}->exec ("CALL mod_backlog_get(?,100);"
     , @args
     , sub{
         my $dbh = shift;
@@ -172,6 +227,21 @@ sub _joinChannelSuccessCallback{
   };
 }
 
+
+=begin nd
+  Function: _channelCloseSuccessCallback
+    Creates the callback that is used to 
+    handle <Pms::Event::Channel> events.
+    
+    The callback removes the backlog from the 
+    database if a channel is closed.
+  
+  Access:
+    Private
+    
+  Returns:
+    sub - a callback function
+=cut
 sub _channelCloseSuccessCallback{
   my $self = shift or die "Need Ref";
   return sub{

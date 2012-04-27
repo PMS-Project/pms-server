@@ -5,6 +5,8 @@
   Package: Pms::Event::Connect
   
   Description:
+  This event is fired when a new connection 
+  is established from a client
   
 =cut
 
@@ -21,7 +23,7 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connection - the <Pms::Core::Connection> object representing the connect
 =cut
 sub new{
   my $class = shift;
@@ -29,13 +31,12 @@ sub new{
   bless($self,$class);
   
   $self->{m_connection} = shift;
-  $self->{m_ip} = undef;
   return $self;
 }
 
 =begin nd
   Function: connection
-    <function_description>
+    Gets the connection object
   
   Access:
     Public
@@ -43,7 +44,7 @@ sub new{
   Parameters:
     
   Returns:
-    xxxx
+    A *ref* to a <Pms::Core::Connection> object
 =cut
 sub connection{
   my $self = shift;

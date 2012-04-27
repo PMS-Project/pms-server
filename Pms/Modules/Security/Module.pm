@@ -5,7 +5,22 @@
   Package: Pms::Modules::Security::Module
   
   Description:
+    This plugin implements a security model for the pms server.
+    It introduces a role concept. Every user has his set of roles which 
+    describe what he can do and what he can't do.
+    
+    The roles are splitted in global and channel roles, a user has his
+    own set of roles for every channel he joined into. 
+    
+  Available global roles:
+    - role_admin: A user has all rights - *everywhere*
+    - role_create_channel: A user can create channels
   
+  Available channel roles:
+    - role_channelAdmin: A user has all rights in the channel
+    - role_join_channel: A user can enter the channel
+    - role_can_speak: A user can speak in the channel
+    - role_change_topic: A user can change the topic of a channel
 =cut
 
 package Pms::Modules::Security::Module;
@@ -37,25 +52,13 @@ our %defaultChannelRuleset = (
   role_can_speak    => 1
 );
 
-#our %users = (
-#  ident => {
-#    globalRoles => {
-#      #roles
-#    },
-#    channelRoles => {
-#      channel => {
-#        #roles
-#      }
-#    }
-#  } 
-#);
-
 =begin nd
   Constructor: new
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    parent - The <Pms::Application> object
+    config - The module config hash
 =cut
 sub new{
   my $class = shift;
@@ -87,7 +90,7 @@ sub new{
 
 =begin nd
   Destructor: DESTROY
-    Initializes the Object
+    Destroys the Object and cleans up the modules ressources
     
   Parameters:
 =cut
@@ -98,16 +101,11 @@ sub DESTROY{
 
 =begin nd
   Function: initialize
-    <function_description>
+    Called by the constructor, initializes the module
+    and connects to all the required signals and events
   
   Access:
     Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub initialize{
   my $self = shift;
@@ -133,16 +131,11 @@ sub initialize{
 
 =begin nd
   Function: _loadSettingsFromDbCallback
-    <function_description>
+    This function is called on module initialization and is loading 
+    persistent channels from the database
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _loadSettingsFromDbCallback(){
   my $self = shift or die "Need Ref";
@@ -170,16 +163,11 @@ sub _loadSettingsFromDbCallback(){
 
 =begin nd
   Function: shutdown
-    <function_description>
+    Cleans up the modules resources.
+    Is automatically called by the destructor
   
   Access:
     Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub shutdown{
   my $self = shift;
@@ -189,16 +177,18 @@ sub shutdown{
 
 =begin nd
   Function: userInfo
-    <function_description>
+    Tries to find the user information for a connection identifier.
+    
+    If it can not find one, it defines a default information set
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $ident - The connection identifier
     
   Returns:
-    xxxx
+    ref - <Pms::Modules::Security::UserInfo> object
 =cut
 sub userInfo(){
   my $self    = shift or die "Need Ref";
@@ -217,16 +207,14 @@ sub userInfo(){
 
 =begin nd
   Function: _onDbConnectCallback
-    <function_description>
+    Returns a function that is called when the
+    connection to the database is finished
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _onDbConnectCallback{
   my $self = shift;
@@ -246,16 +234,14 @@ sub _onDbConnectCallback{
 
 =begin nd
   Function: _dbErrorCallback
-    <function_description>
+    Returns a function that is called when there
+    was a error in communication with the database
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _dbErrorCallback{
   my $self = shift;
@@ -266,16 +252,14 @@ sub _dbErrorCallback{
 
 =begin nd
   Function: _clientConnectedCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Connect> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _clientConnectedCallback{
   my $self = shift;
@@ -292,16 +276,14 @@ sub _clientConnectedCallback{
 
 =begin nd
   Function: _joinChannelRequestCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Join> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _joinChannelRequestCallback{
   my $self = shift;
@@ -372,16 +354,14 @@ sub _joinChannelRequestCallback{
 
 =begin nd
   Function: _leaveChannelSuccessCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Leave> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _leaveChannelSuccessCallback{
   my $self = shift;
@@ -404,16 +384,14 @@ sub _leaveChannelSuccessCallback{
 
 =begin nd
   Function: _basicNickChangeCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::NickChange> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _basicNickChangeCallback{
   my $self = shift;
@@ -448,16 +426,14 @@ sub _basicNickChangeCallback{
 
 =begin nd
   Function: _identifyCallback
-    <function_description>
+    Creates a callback function that is used to handle the
+    identify command registered from the security module.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the identify callback
 =cut
 sub _identifyCallback{
   my $self = shift;
@@ -470,6 +446,7 @@ sub _identifyCallback{
     push(@args,$nickname);
     push(@args,$password);
     
+    #load the user from the database if username and nicknames are matching
     my $select = "CALL mod_security_getUserWithRoles(?,?)";
 
     $self->{m_dbh}->exec ($select, @args, sub{
@@ -502,16 +479,14 @@ sub _identifyCallback{
 
 =begin nd
   Function: _disconnectCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Disconnect> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _disconnectCallback{
   my $self = shift;
@@ -530,16 +505,14 @@ sub _disconnectCallback{
 
 =begin nd
   Function: _messageSendRequestCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Message> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _messageSendRequestCallback{
   my $self = shift;
@@ -560,16 +533,14 @@ sub _messageSendRequestCallback{
 
 =begin nd
   Function: _createChannelRequestCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Channel> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _createChannelRequestCallback{
   my $self = shift;
@@ -595,16 +566,18 @@ sub _createChannelRequestCallback{
 
 =begin nd
   Function: _createChannelSuccessCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Channel> events.
+    
+  Note:
+    This handles the special case when the Server
+    tells us that the create was successfull.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _createChannelSuccessCallback{
   my $self = shift;
@@ -626,16 +599,14 @@ sub _createChannelSuccessCallback{
 
 =begin nd
   Function: _changeTopicRequestCallback
-    <function_description>
+    Creates the callback that is used to 
+    handle <Pms::Event::Topic> events.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - a callback function
 =cut
 sub _changeTopicRequestCallback{
   my $self = shift;
@@ -654,16 +625,14 @@ sub _changeTopicRequestCallback{
 
 =begin nd
   Function: _showRightsCallback
-    <function_description>
+    Creates a callback function that is used to handle the
+    showRights command registered from the security module.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the showRights callback
 =cut
 sub _showRightsCallback{
   my $self = shift;
@@ -678,16 +647,14 @@ sub _showRightsCallback{
 
 =begin nd
   Function: _giveChannelOpCallback
-    <function_description>
+    Creates a callback function that is used to handle the
+    giveChannelOp command registered from the security module.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the giveChannelOp callback
 =cut
 sub _giveChannelOpCallback{
   my $self = shift;
@@ -735,16 +702,14 @@ sub _giveChannelOpCallback{
 
 =begin nd
   Function: _takeChannelOpCallback
-    <function_description>
+    Creates a callback function that is used to handle the
+    takeChannelOp command registered from the security module.
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the takeChannelOp callback
 =cut
 sub _takeChannelOpCallback{
   my $self = shift;

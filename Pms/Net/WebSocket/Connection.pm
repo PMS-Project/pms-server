@@ -5,6 +5,8 @@
   Package: Pms::Net::WebSocket::Connection
   
   Description:
+    This is the implementation of the Websocket based connection-object
+    
   
 =cut
 
@@ -20,11 +22,16 @@ our @ISA = qw(Pms::Core::Connection);
 our %PmsEvents = ('handshake_done' => 1);
 
 =begin nd
+  Signal: handshake_done
+  
+  Description:
+    is emitted when the websocket handshake is finished
+    
+=cut
+
+=begin nd
   Constructor: new
     Initializes the Object
-    
-  Parameters:
-    xxxx - description
 =cut
 sub new{
   my $class = shift;
@@ -39,15 +46,10 @@ sub new{
 
 =begin nd
   Function: _initializeHandle
-    <function_description>
+    Initializes the internal AnyEvent Handle
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
 =cut
 sub _initializeHandle{
   my $self = shift;
@@ -64,16 +66,11 @@ sub _initializeHandle{
 
 =begin nd
   Function: _onHandshakeFinished
-    <function_description>
+    Callback function that is automatically called when the 
+    websocket handshake is done.
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _onHandshakeFinished{
   my $self = shift or die "Need Ref";
@@ -98,16 +95,10 @@ sub _onHandshakeFinished{
 
 =begin nd
   Function: _onErrorCallback
-    <function_description>
+    Creates a callback that handles socket errors
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _onErrorCallback{
   my $self = shift or die "Need Ref";
@@ -123,16 +114,10 @@ sub _onErrorCallback{
 
 =begin nd
   Function: _onEofCallback
-    <function_description>
+    creates a callback that handles the closing of the socket
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _onEofCallback{
   my $self = shift or die "Need Ref";
@@ -145,16 +130,16 @@ sub _onEofCallback{
 
 =begin nd
   Function: _readyRead
-    <function_description>
+    This function is called, when there 
+    is new data available. It emits 
+    the dataAvailable signal.
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $hdl  - the socket handle
+    $line - the chunk of data that was received
 =cut
 sub _readyRead{
   my $self = shift or die "Need Ref";
@@ -169,16 +154,9 @@ sub _readyRead{
 
 =begin nd
   Function: postMessage
-    <function_description>
   
-  Access:
-    Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+  Reimplemented:
+  See <Pms::Core::Connection::postMessage>
 =cut
 sub postMessage{
   my $self = shift or die "Need Ref";
@@ -189,16 +167,9 @@ sub postMessage{
 
 =begin nd
   Function: sendMessage
-    <function_description>
   
-  Access:
-    Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+  Reimplemented:
+  See <Pms::Core::Connection::sendMessage>
 =cut
 sub sendMessage{
   my $self = shift or die "Need Ref";
@@ -210,16 +181,9 @@ sub sendMessage{
 
 =begin nd
   Function: close
-    <function_description>
   
-  Access:
-    Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+  Reimplemented:
+  See <Pms::Core::Connection::close>
 =cut
 sub close{
   my $self = shift or die "Need Ref";
@@ -228,16 +192,9 @@ sub close{
 
 =begin nd
   Function: identifier
-    <function_description>
   
-  Access:
-    Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+  Reimplemented:
+  See <Pms::Core::Connection::identifier>
 =cut
 sub identifier{
   my $self = shift or die "We need a Reference";

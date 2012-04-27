@@ -5,7 +5,17 @@
   Package: Pms::Core::ConnectionProvider
   
   Description:
+  Implements the base class for all ConnectionProviders.
+  A ConnectionProvider is a object that can accept incoming
+  connection on a special device for example a Socket or 
+  a HTTP Request.
+=cut
+
+=begin nd
+  Signal: connectionAvailable()
   
+  Description:
+  is emitted when a new connection is enqueued
 =cut
 
 package Pms::Core::ConnectionProvider;
@@ -15,6 +25,13 @@ use utf8;
 use Pms::Core::Object;
 
 our @ISA = qw(Pms::Core::Object);
+
+=begin nd
+  Variable: %PmsEvents
+  
+  Description:
+  See <Pms::Core::Object>
+=cut
 our %PmsEvents = ('connectionAvailable' => 1);
 
 =begin nd
@@ -22,7 +39,7 @@ our %PmsEvents = ('connectionAvailable' => 1);
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    $parent - the <Pms::Application> object
 =cut
 sub new {
   my $class = shift;
@@ -39,16 +56,14 @@ sub new {
 
 =begin nd
   Function: nextConnection
-    <function_description>
+    Returns the next pending connection in the queue
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    *undef* if no connection is available
+    or a <Pms::Core::Connection> reference
 =cut
 sub nextConnection{
   my $self = shift or die "No Ref";
@@ -59,16 +74,13 @@ sub nextConnection{
 
 =begin nd
   Function: connectionAvailable
-    <function_description>
+    Checks if there are pending connections
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    the number of pending connections
 =cut
 sub connectionsAvailable{
   my $self = shift or die "No Ref";

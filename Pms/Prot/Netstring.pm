@@ -31,16 +31,20 @@ our $lastError;
 
 =begin nd
   Function: parse
-    <function_description>
+    Tries to parse a nestring from the buffer.
+    When it can read a netrstring, the data is removed from
+    the buffer.
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $handle - the AnyEvent::Handle
+    $buffer - the read Buffer
     
   Returns:
-    xxxx
+    undef  - if it could not read a netstring
+    string - the data that was read from the buffer
 =cut
 sub parse {
   my $handle = shift;
@@ -89,16 +93,16 @@ sub parse {
 
 =begin nd
   Function: serialize
-    <function_description>
+    Serializes a message into the netstring format
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $value - the data we want to serialize
     
   Returns:
-    xxxx
+    string - the message in netrstring format
 =cut
 sub serialize {
   my $value = shift;

@@ -5,7 +5,7 @@
   Package: Pms::Event::Topic
   
   Description:
-  
+    This event is fired when a user tries to change the topic
 =cut
 
 package Pms::Event::Topic;
@@ -21,7 +21,9 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connecion - the <Pms::Core::Connection> object doing the topic change
+    channel   - the <Pms::Core::Channel> object the user tries to change
+    topic     - the new topic the user wants to set
 =cut
 sub new{
   my $class = shift;
@@ -36,15 +38,13 @@ sub new{
 
 =begin nd
   Function: connection
-    <function_description>
+    The connection object that tries to change the topic
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    ref - <Pms::Core::Connection> object doing the topic change
 =cut
 sub connection{
   return $_[0]->{m_connection};
@@ -52,15 +52,13 @@ sub connection{
 
 =begin nd
   Function: channel
-    <function_description>
+    The channel to be changed
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    ref - The <Pms::Core::Channel> object the user tries to change
 =cut
 sub channel{
   return $_[0]->{m_channel};
@@ -68,15 +66,13 @@ sub channel{
 
 =begin nd
   Function: channelName
-    <function_description>
+    Reads the name of the channel that is going to be changed
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - the channel name
 =cut
 sub channelName{
   return $_[0]->{m_channel}->channelName();
@@ -84,15 +80,13 @@ sub channelName{
 
 =begin nd
   Function: topic
-    <function_description>
+    The new topic that the user tries to set
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - the new topic
 =cut
 sub topic{
   return $_[0]->{m_topic};

@@ -10,8 +10,16 @@
   PMS that need to send signals or events.
   
   Every subclass has to define a global Hash called %PmsEvents
-  and put all available events in it. Pms::Object will automatically
-  check if the event exists if its emitted or connected.
+  and put all available events in it. 
+  
+  Pms::Object will automatically check if the event exists when it is emitted or connected.
+  
+  (start code)
+  our %PmsEvents = (
+    signal_foo => 1,
+    signal_bar => 1
+  );
+  (end)
 =cut
 
 package Pms::Core::Object;
@@ -22,16 +30,13 @@ use Object::Event;
 use Scalar::Util;
 
 our @ISA = qw(Object::Event);
-our %PmsEvents = ('connectionAvailable' => 1);
+our %PmsEvents = ();
 
 our $Debug = $ENV{'PMS_DEBUG'};
 
 =begin nd
   Constructor: new
     Initializes the Object
-    
-  Parameters:
-    xxxx - description
 =cut
 sub new {
   my $class = shift;
@@ -43,16 +48,29 @@ sub new {
 
 =begin nd
   Function: connect
-    <function_description>
+    connects a callback to a signal supports also multiple connects
+    
+    (start code)
+    $guard = $object->connect(
+      dataAvailable => $self->dataAvailableCallback(),
+      disconnect    => $self->disconnectCallback()
+    );
+    (end)
+  Note:
+    This will die if the signal does not exist
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    connections - a hash containing all signal => callback associations
     
   Returns:
-    xxxx
+    The return value $guard will be a guard that represents the set of callbacks you have installed. 
+    
+    You can either just "forget" the contents of $guard to unregister the callbacks or call disconnect with that ID to remove those callbacks again. 
+    
+    If connect is called in a void context no guard is returned and you have no chance to unregister the registered callbacks.
 =cut
 sub connect {
   my $self = shift;
@@ -81,16 +99,24 @@ sub connect {
 
 =begin nd
   Function: emitSignal
-    <function_description>
+    Fires a signal and passes all arguments to the callback,
+    First argument in the callback is always the Object emitting
+    the signal.
+    
+  Note:
+    Even if this is a public function the common use case is to
+    not emit a signal from the outside of the object.
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $signal - the name of the signal to emit
+    @args   - any number of arguments that should be available in the callback
     
   Returns:
-    xxxx
+    0 if it was not possible to emit the signal
+    1 is the signal was emitted
 =cut
 sub emitSignal {
   my $self = shift;
@@ -108,16 +134,13 @@ sub emitSignal {
 
 =begin nd
   Function: disconnect
-    <function_description>
+    Remove a connection or a set of connections to callbacks.
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $guard - The event guard returned by <connect>
 =cut
 sub disconnect {
   my $self = shift;
@@ -128,16 +151,17 @@ sub disconnect {
 
 =begin nd
   Function: _hasEvent
-    <function_description>
+    Checks if the current class-hierarchy has a signal or not
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
+    $signal - The name of the signal we are looking for
     
   Returns:
-    xxxx
+    1 - for yes
+    0 - for no
 =cut
 sub _hasEvent{
   my $self = shift;
@@ -150,23 +174,29 @@ sub _hasEvent{
 
 =begin nd
   Function: _searchEvent
-    <function_description>
+    Iterates over the Object hierarchy and searches 
+    for the event. 
+    This function is recursive and climbs up the inheritance
+    tree to find the event.
+    It starts to search in the leaves up to the root.
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
+    $signal - The name of the signal we are looking for
+    @classes - A list of the classes we want to look into
     
   Returns:
-    xxxx
+    1 - for yes
+    0 - for no
 =cut
 sub _searchEvent{
   my $self = shift;
   my $event = shift;
   my @classes = shift;
   
-  #first search the top level classes
+  #first search the leaves
   foreach my $currClass (@classes){
     my %events = $self->_getEvents($currClass);
     if (exists $events{$event}) {
@@ -188,16 +218,16 @@ sub _searchEvent{
 
 =begin nd
   Function: _getSuperClasses
-    <function_description>
+    Tries to find the super classes of a given class
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
+    $class - The child class of which we want to know the parents
     
   Returns:
-    xxxx
+    A array of superclasses (The ISA array of the class)
 =cut
 sub _getSuperClasses{
   my $self = shift;
@@ -212,16 +242,16 @@ sub _getSuperClasses{
 
 =begin nd
   Function: _getEvents
-    <function_description>
+    Tries to search the %pmsEvents hash of a given class
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
+    $class - The class of which we want to know the events
     
   Returns:
-    xxxx
+    a hash containins the events (the %pmsEvents hash of the class)
 =cut
 sub _getEvents{
   my $self = shift;

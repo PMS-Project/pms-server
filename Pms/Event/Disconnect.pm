@@ -5,6 +5,8 @@
   Package: Pms::Event::Disconnect
   
   Description:
+    This event is fired when a user disconnects 
+    from the server.
   
 =cut
 
@@ -21,7 +23,7 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connection - the <Pms::Core::Connection> object doing the disconnect
 =cut
 sub new{
   my $class = shift;
@@ -34,7 +36,7 @@ sub new{
 
 =begin nd
   Function: connection
-    <function_description>
+    Gets the connection object
   
   Access:
     Public
@@ -42,7 +44,7 @@ sub new{
   Parameters:
     
   Returns:
-    xxxx
+    A *ref* to a <Pms::Core::Connection> object
 =cut
 sub connection{
   return $_[0]->{m_connection};

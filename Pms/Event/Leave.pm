@@ -5,7 +5,8 @@
   Package: Pms::Event::Leave
   
   Description:
-  
+    This Event is fired if a user tries to leave 
+    a channel. 
 =cut
 
 package Pms::Event::Leave;
@@ -20,7 +21,8 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connection - the <Pms::Core::Connection> object which is doing the join
+    channel    - the <Pms::Core::Channel> object the user tries to join into
 =cut
 sub new{
   my $class = shift;
@@ -34,15 +36,13 @@ sub new{
 
 =begin nd
   Function: channel
-    <function_description>
+    Reads the channel object
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    ref - reference to the <Pms::Core::Channel> object
 =cut
 sub channel{
   return $_[0]->{m_channel};
@@ -50,15 +50,13 @@ sub channel{
 
 =begin nd
   Function: channelName
-    <function_description>
+    Reads the channel name
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    string - the channel name
 =cut
 sub channelName{
   return $_[0]->{m_channel}->channelName();
@@ -66,15 +64,13 @@ sub channelName{
 
 =begin nd
   Function: connection
-    <function_description>
+    Reads the connection object
   
   Access:
     Public
     
-  Parameters:
-    
   Returns:
-    xxxx
+    ref - the <Pms::Core::Connection> object
 =cut
 sub connection{
   return $_[0]->{m_connection};

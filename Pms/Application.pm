@@ -38,30 +38,187 @@ our @ISA = qw(Pms::Core::Object);
 
 our $Debug = $ENV{'PMS_DEBUG'};
 
-our %PmsEvents = ( 'client_connect_request' => 1        # Event is fired if a new Client tries to connect to the server
-                 , 'client_connect_success' => 1        # Event is fired if a new Client connects to the server
-                 , 'client_disconnect_success' => 1     # Any client closed the connection
-                 , 'message_send_request' => 1          # Any client asks if he can send a message to any channel
-                 , 'message_send_success' => 1              # Any client has sent a message to any channel
-                 , 'join_channel_request' => 1          # User requests to join a channel
-                 , 'join_channel_success' => 1           # A connected user entered a channel
-                 , 'leave_channel_success' => 1     # A connected user left a channel
-                 , 'create_channel_request' => 1       # A user tries to create a new channel
-                 , 'create_channel_success' => 1       # A new channel was created on the server 
-                 , 'channel_close_success' => 1      # A channel was deleted/closed
-                 , 'change_nick_request' => 1        # A user tries to change his nickname
-                 , 'change_nick_success' => 1        # A user has changed his nickname
-                 , 'change_topic_request' => 1        # A user tries to change a channel topic
-                 , 'change_topic_success' => 1        # A user has changed a channel topic
-                 , 'execute_command_request' => 1     # A user tries to execute a custom command
+our %PmsEvents = ( 'client_connect_request' => 1
+                 , 'client_connect_success' => 1
+                 , 'client_disconnect_success' => 1
+                 , 'message_send_request' => 1
+                 , 'message_send_success' => 1
+                 , 'join_channel_request' => 1
+                 , 'join_channel_success' => 1
+                 , 'leave_channel_success' => 1
+                 , 'create_channel_request' => 1
+                 , 'create_channel_success' => 1
+                 , 'channel_close_success' => 1
+                 , 'change_nick_request' => 1
+                 , 'change_nick_success' => 1
+                 , 'change_topic_request' => 1
+                 , 'change_topic_success' => 1
+                 , 'execute_command_request' => 1
                  );
+
+=begin nd
+  Signal: client_connect_request
+  
+  Description:
+    Event is fired if a new Client tries to connect to the server
+    
+  Parameters:
+    event - <Pms::Event::Connect> instance
+=cut    
+
+=begin nd  
+  Signal: client_connect_success
+  
+  Description:
+    Event is fired if a new Client connects to the server
+    
+  Parameters:
+    event - <Pms::Event::Connect> instance
+ =cut    
+
+=begin nd     
+  Signal: client_disconnect_success
+  
+  Description:
+    Any client closed the connection
+    
+  Parameters:
+    event - <Pms::Event::Disconnect> instance
+=cut    
+
+=begin nd      
+  Signal: message_send_request
+  
+  Description:
+    Any client asks if he can send a message to any channel
+    
+  Parameters:
+    event - <Pms::Event::Message> instance
+=cut    
+
+=begin nd      
+  Signal: message_send_success
+  
+  Description:
+    Any client has sent a message to any channel
+    
+  Parameters:
+    event - <Pms::Event::Message> instance
+=cut    
+
+=begin nd      
+  Signal: join_channel_request
+  
+  Description:
+    User requests to join a channel
+    
+  Parameters:
+    event - <Pms::Event::Join> instance
+=cut    
+
+=begin nd      
+  Signal: join_channel_success
+  
+  Description: 
+    A connected user entered a channel
+    
+  Parameters:
+    event - <Pms::Event::Join> instance
+=cut    
+
+=begin nd      
+  Signal: leave_channel_success
+  
+  Description:
+    A connected user left a channel
+    
+  Parameters:
+    event - <Pms::Event::Leave> instance
+=cut    
+
+=begin nd      
+  Signal: create_channel_request
+  
+  Description: 
+    A user tries to create a new channel
+    
+  Parameters:
+    event - <Pms::Event::Channel> instance
+=cut    
+
+=begin nd      
+  Signal: create_channel_success
+  
+  Description:
+    A new channel was created on the server 
+    
+  Parameters:
+    event - <Pms::Event::Channel> instance
+=cut    
+
+=begin nd      
+  Signal: channel_close_success
+  
+  Description:
+    A channel was deleted/closed
+    
+  Parameters:
+    event - <Pms::Event::Channel> instance
+=cut    
+
+=begin nd      
+  Signal: change_nick_request
+  
+  Description:
+    A user tries to change his nickname
+    
+  Parameters:
+    event - <Pms::Event::NickChange> instance
+=cut    
+
+=begin nd      
+  Signal: change_nick_success
+  
+  Description: 
+    A user has changed his nickname
+    
+  Parameters:
+    event - <Pms::Event::NickChange> instance
+=cut    
+
+=begin nd      
+  Signal: change_topic_request
+  
+  Description:
+    A user tries to change a channel topic
+    
+  Parameters:
+    event - <Pms::Event::Topic> instance
+=cut    
+
+=begin nd      
+  Signal: change_topic_success
+  
+  Description:
+    A user has changed a channel topic
+    
+  Parameters:
+    event - <Pms::Event::Topic> instance
+=cut    
+
+=begin nd  
+  Signal: execute_command_request
+  
+  Description:
+    A user tries to execute a custom command
+    
+  Parameters:
+    event - <Pms::Event::Command> instance
+=cut
                  
 =begin nd
   Constructor: new
     Initializes the Object
-    
-  Parameters:
-    $xxxx - description
 =cut
 sub new{
   my $class = shift;
@@ -121,16 +278,11 @@ sub new{
 
 =begin nd
   Function: execute
-    <function_description>
+    Loads the ConnectionProviders, Modules
+    and start the eventloop.
   
   Access:
     Public
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub execute{
   my $self = shift or die "Need Ref";
@@ -144,16 +296,11 @@ sub execute{
 
 =begin nd
   Function: _loadConnectionProviders
-    <function_description>
+    Tries to load all ConnectionProviders mentioned 
+    in the config-file.
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _loadConnectionProviders{
   my $self = shift or die "Need Ref";
@@ -179,16 +326,11 @@ sub _loadConnectionProviders{
 
 =begin nd
   Function: _loadModules
-    <function_description>
+    Tries to load all modules mentioned 
+    in the config-file.
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _loadModules{
   my $self = shift or die "Need Ref";
@@ -491,16 +633,18 @@ sub createChannel{
 
 =begin nd
   Function: channel
-    <function_description>
+    Tries to find the <Pms::Core::Channel> Object
+    by name.
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $channelName - the name of the channel we are looking for
     
   Returns:
-    xxxx
+    undef - if nothing was found
+    ref   - <Pms::Core::Channel> if the object was found
 =cut
 sub channel{
   my $self = shift or die "Need Ref";
@@ -517,23 +661,23 @@ sub channel{
 
 =begin nd
   Function: registerCommand
-    <function_description>
+    Registers a custom command in the server,
+    if its not available already.
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $command - the command name
+    $cb      - the callback to be executed when the command is issued
 =cut
 sub registerCommand{
   my $self = shift or die "Need Ref";
   my $command = shift or die "Need Command";
   my $cb = shift or die "Need Callback";
   
-  if(!exists $self->{m_commands}->{$command}){
+  if(!exists $self->{m_buildinCommands}->{$command} && 
+     !exists $self->{m_commands}->{$command}){
     $self->{m_commands}->{$command} = $cb;
     return;
   }
@@ -542,16 +686,13 @@ sub registerCommand{
 
 =begin nd
   Function: channels
-    <function_description>
+    Get a list of all channels
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    array - a list of all channels 
 =cut
 sub channels{
   my $self = shift or die "Need Ref";
@@ -560,16 +701,13 @@ sub channels{
 
 =begin nd
   Function: sendBroadcast
-    <function_description>
+    Sends a broadcast message to all connected clients
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $message - the message we want to send
 =cut
 sub sendBroadcast{
   my $self = shift or die "Need Ref";
@@ -581,16 +719,12 @@ sub sendBroadcast{
 
 =begin nd
   Function: _termSignalCallback
-    <function_description>
+    Creates a callback that is called when the OS send the
+    TERM signal to the server. 
+    This stops the eventloop and starts to shutdown the server.
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _termSignalCallback{
   my $self = shift;
@@ -602,16 +736,13 @@ sub _termSignalCallback{
 
 =begin nd
   Function: _newConnectionCallback
-    <function_description>
+    Creates a callback that handles new incoming connections
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _newConnectionCallback{
   my $self = shift or die "Need Ref";
@@ -660,16 +791,13 @@ sub _newConnectionCallback{
 
 =begin nd
   Function: _dataAvailableCallback
-    <function_description>
+    Creates a callback that handles all new messages from the client
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _dataAvailableCallback{
   my $self = shift or die "Need Ref";
@@ -692,16 +820,13 @@ sub _dataAvailableCallback{
 
 =begin nd
   Function: _clientDisconnectCallback
-    <function_description>
+    Creates a callback that handles all disconnects from the clients
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _clientDisconnectCallback{
   my $self = shift or die "Need Ref";
@@ -718,16 +843,15 @@ sub _clientDisconnectCallback{
 
 =begin nd
   Function: invokeCommand
-    <function_description>
+    Tries to invoke one of the buildin or registered commands
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $connection - the connection object that wants to invoke the command
+    $command    - the command name
+    @args       - the arguments to the command (optional)
 =cut
 sub invokeCommand{
   my $self       = shift or die "Need Ref";
@@ -766,16 +890,13 @@ sub invokeCommand{
 
 =begin nd
   Function: _sendCommandCallback
-    <function_description>
+    Creates a callback that handles the /send command
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the command callback
 =cut
 sub _sendCommandCallback{
   my $self    = shift;
@@ -832,16 +953,10 @@ sub _sendCommandCallback{
 
 =begin nd
   Function: _createChannelCallback
-    <function_description>
+    Creates the callback that handles the /create command
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _createChannelCallback{
   my $self = shift or die "Need Ref";
@@ -868,16 +983,10 @@ sub _createChannelCallback{
 
 =begin nd
   Function: _joinChannelCallback
-    <function_description>
+    Creates the callback that handles the /join command
   
   Access:
     Private
-    
-  Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
 =cut
 sub _joinChannelCallback{
   my $self = shift or die "Need Ref";
@@ -908,16 +1017,13 @@ sub _joinChannelCallback{
 
 =begin nd
   Function: _leaveChannelCallback
-    <function_description>
+    Creates the callback that handles the /leave command
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _leaveChannelCallback{
   my $self = shift or die "Need Ref";
@@ -948,16 +1054,13 @@ sub _leaveChannelCallback{
 
 =begin nd
   Function: _listChannelCallback
-    <function_description>
+    Creates the callback that handles the /list command
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _listChannelCallback{
   my $self = shift or die "Need Ref";
@@ -979,16 +1082,13 @@ sub _listChannelCallback{
 
 =begin nd
   Function: _changeNickCallback
-    <function_description>
+    Creates a callback that handles the /nick command
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _changeNickCallback{
   my $self = shift or die "Need Ref";
@@ -1031,16 +1131,13 @@ sub _changeNickCallback{
 
 =begin nd
   Function: _listUsersCallback
-    <function_description>
+    Creates a callback that handles the /users command
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _listUsersCallback{
   my $self = shift or die "Need Ref";
@@ -1066,16 +1163,13 @@ sub _listUsersCallback{
 
 =begin nd
   Function: _topicCallback
-    <function_description>
+    Creates a callback that handles the /topic command
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    sub - the callback
 =cut
 sub _topicCallback{
   my $self = shift or die "Need Ref";

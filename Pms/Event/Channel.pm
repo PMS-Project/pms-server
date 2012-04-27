@@ -5,6 +5,8 @@
   Package: Pms::Event::Channel
   
   Description:
+    This Event is fired anytime when a Channel is opened
+    or closed.
   
 =cut
 
@@ -21,7 +23,8 @@ our @ISA = ("Pms::Event::Event");
     Initializes the Object
     
   Parameters:
-    xxxx - description
+    connection - the connection object triggering the change
+    channel    - the name of the channel
 =cut
 sub new{
   my $class = shift;
@@ -37,16 +40,16 @@ sub new{
 
 =begin nd
   Function: setClosing
-    <function_description>
+    Sets the close flag to true.
+    
+    Indicates that the Channel is in closing state
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    1 - for closing state
+    0 - for opening state
 =cut
 sub setClosing{
   $_[0]->{m_closing} = $_[1];
@@ -54,16 +57,13 @@ sub setClosing{
 
 =begin nd
   Function: isClosing
-    <function_description>
+    Returns the closing flag
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    1 or 0 see <isClosing> for meaning
 =cut
 sub isClosing{
   return $_[0]->{m_closing};
@@ -71,16 +71,13 @@ sub isClosing{
 
 =begin nd
   Function: channelName
-    <function_description>
+    The channel name
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    A *string* containing the channel name
 =cut
 sub channelName{
   return $_[0]->{m_channel};
@@ -88,16 +85,13 @@ sub channelName{
 
 =begin nd
   Function: connection
-    <function_description>
+    Returns the user connection object
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    A reference to a <Pms::Core::Connection> instance
 =cut
 sub connection{
   return $_[0]->{m_connection};
