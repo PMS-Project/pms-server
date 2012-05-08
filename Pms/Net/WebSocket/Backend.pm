@@ -60,7 +60,7 @@ AnyEvent::Handle::register_read_type websock_handshake => sub{
       $hs->parse($chunk);
 
       if ($hs->is_done) {
-        #warn "Handshake done";
+        #warn "PMS-Core> ". "Handshake done";
         $hdl->push_write($hs->to_string);
         $cb->($hdl,undef);
         return 1;
@@ -95,7 +95,7 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
       return;
     }
     
-    #warn "Message";
+    #warn "PMS-Core> ". "Message";
     
     $hdl->{rbuf} = undef;
     my $hs    = $hdl->{pmsWebSockSrv};
@@ -120,17 +120,17 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
       return;
     }
     
-    #warn "Frames found";
+    #warn "PMS-Core> ". "Frames found";
     my $read = 0;
     while(1){
       my $value = Pms::Prot::Netstring::parse($hdl,\$hdl->{pmsReadBuf});
       if(defined $value){
-        #warn "Callback";
+        #warn "PMS-Core> ". "Callback";
         $cb->($hdl,$value);
         $read = 1; #tell the AnyEvent::Handle code that we finally have read data
       }else{
         if(defined $Pms::Prot::Netstring::lastError){
-          warn "Error in Websocket Read ".$Pms::Prot::Netstring::lastError;
+          warn "PMS-Core> ". "Error in Websocket Read ".$Pms::Prot::Netstring::lastError;
           $_[0]->_error (Errno::EBADMSG);
         }
         last;
@@ -150,7 +150,7 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
 =cut
 AnyEvent::Handle::register_write_type websock_pms => sub {
   if($Debug){
-    warn "Writing Websocket";
+    warn "PMS-Core> ". "Writing Websocket";
   }
   my $handle = shift;
   my $frame  = Protocol::WebSocket::Frame->new(Pms::Prot::Netstring::serialize(shift));

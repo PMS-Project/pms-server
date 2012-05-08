@@ -92,7 +92,7 @@ sub connect {
   }
   
   if($Debug){
-    warn "Passing Args to reg_cb @_";
+    warn "PMS-Core> ". "Passing Args to reg_cb @_";
   }
   $self->reg_cb(@_);
 }

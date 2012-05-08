@@ -227,20 +227,20 @@ sub new{
   
   $self->{m_config} = shift;     
   
-  warn $self->{m_config};
+  warn "PMS-Core> ". $self->{m_config};
   
   if($Debug){
     my $test = Pms::Core::Object->new();
     if(!$test->_hasEvent("muhls")){
-      warn "Test 1 ok";
+      warn "PMS-Core> ". "Test 1 ok";
     }else{
-      warn "Test 2 failed";
+      warn "PMS-Core> ". "Test 2 failed";
     }
     
     if($test->_hasEvent("connectionAvailable")){
-      warn "Test 2 ok";
+      warn "PMS-Core> ". "Test 2 ok";
     }else{
-      warn "Test 2 failed";
+      warn "PMS-Core> ". "Test 2 failed";
     }
   }
 
@@ -290,7 +290,7 @@ sub execute{
   $self->_loadConnectionProviders();
   $self->_loadModules();
   
-  warn "Starting the Eventloop, listening for Connections";
+  warn "PMS-Core> ". "Starting the Eventloop, listening for Connections";
   $self->{m_eventLoop} ->recv; #eventloop
 }
 
@@ -313,7 +313,7 @@ sub _loadConnectionProviders{
       die "No name defined in ConnectionProvider";
     }
     
-    warn "Trying to load ConnectionProvider: $curr->{name} ";
+    warn "PMS-Core> ". "Trying to load ConnectionProvider: $curr->{name} ";
     
     my $name = $curr->{name};
     eval "require $name" or die "Could not load ConnectionProvider: $name error: $@";;
@@ -349,7 +349,7 @@ sub _loadModules{
     }
     
     my $name = $curr->{name};
-    warn "Trying to load Module: $curr->{name} ";
+    warn "PMS-Core> ". "Trying to load Module: $curr->{name} ";
     
     eval "require $name" or die "Could not load module: $name error: $@";
     my $module = $name->new($self,$curr->{config});
@@ -468,7 +468,7 @@ sub changeNick{
   my $newNick    = shift or die "Need a new Nick Argument";
   my $force      = shift;
   if(!defined $force){
-    warn "Setting force to 0";
+    warn "PMS-Core> ". "Setting force to 0";
     $force = 0;
   }
   
@@ -559,7 +559,7 @@ sub joinChannel{
 
     if($event->wasRejected()){
       if($Debug){
-        warn "Join was rejected, reason: ".$event->reason();
+        warn "PMS-Core> ". "Join was rejected, reason: ".$event->reason();
       }
       $self->{m_lastError} = $event->reason();
       return 0;
@@ -681,7 +681,7 @@ sub registerCommand{
     $self->{m_commands}->{$command} = $cb;
     return;
   }
-  warn "Command ".$command." already exists, did not register it"; 
+  warn "PMS-Core> ". "Command ".$command." already exists, did not register it";
 }
 
 =begin nd
@@ -729,7 +729,7 @@ sub sendBroadcast{
 sub _termSignalCallback{
   my $self = shift;
   return sub {
-    warn "Received TERM Signal\n";
+    warn "PMS-Core> ". "Received TERM Signal\n";
     $self->{m_eventLoop}->send; #die from Eventloop
   }  
 }
@@ -759,7 +759,7 @@ sub _newConnectionCallback{
       $self->emitSignal('client_connect_request' => $event);
     
       if($event->wasRejected()){
-        warn "Connection was rejected, reason: ".$event->reason();
+        warn "PMS-Core> ". "Connection was rejected, reason: ".$event->reason();
         $connection->sendMessage("/serverMessage \"default\" \"Connection rejected: ".$event->reason()."\" ");
         $connection->close();
         next;
@@ -805,13 +805,13 @@ sub _dataAvailableCallback{
         my ($connection) = @_;
         while($connection->messagesAvailable()){
           my $message = $connection->nextMessage();
-          warn "Reveived Message: ".$message if($Debug);
+          warn "PMS-Core> ". "Reveived Message: ".$message if($Debug);
           
           my %command = $self->{m_parser}->parseMessage($message);
           if(keys %command){
             $self->invokeCommand($connection,\%command);
           }else{
-            warn "Empty ".$self->{m_parser}->{m_lastError};
+            warn "PMS-Core> ". "Empty ".$self->{m_parser}->{m_lastError};
             #do Error handling
           }
         }
@@ -860,7 +860,7 @@ sub invokeCommand{
   
   #first try to invoke build in commands
   if(exists $self->{m_buildinCommands}->{$command->{'name'}}){
-    warn "Invoking Command: ".$command->{'name'} if($Debug);
+    warn "PMS-Core> ". "Invoking Command: ".$command->{'name'} if($Debug);
     #command hash contains a reference to the arguments array
     my @args = @{$command->{'args'}};
     $self->{m_buildinCommands}->{$command->{'name'}}->( $connection,@args );
@@ -874,12 +874,12 @@ sub invokeCommand{
     $self->emitSignal('execute_command_request' => $event);
 
     if($event->wasRejected()){
-      warn "Execute command was rejected, reason: ".$event->reason();
+      warn "PMS-Core> ". "Execute command was rejected, reason: ".$event->reason();
       $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$event->reason()));
       return;
     }
     
-    warn "Invoking Custom Command: ".$command->{'name'} if($Debug);
+    warn "PMS-Core> ". "Invoking Custom Command: ".$command->{'name'} if($Debug);
     #command hash contains a reference to the arguments array
     my @args = @{$command->{'args'}};
     $self->{m_commands}->{$command->{'name'}}->( $connection,@args );
@@ -935,7 +935,7 @@ sub _sendCommandCallback{
     
     if($event->wasRejected()){
       if($Debug){
-        warn "Message was rejected, reason: ".$event->reason();
+        warn "PMS-Core> ". "Message was rejected, reason: ".$event->reason();
       }
       $connection->postMessage("/serverMessage \"".$channel."\" \"Message rejected: ".$event->reason()."\" ");
       return;
@@ -1116,7 +1116,7 @@ sub _changeNickCallback{
 
     if($event->wasRejected()){
       if($Debug){
-        warn "Nick was rejected, reason: ".$event->reason();
+        warn "PMS-Core> ". "Nick was rejected, reason: ".$event->reason();
       }
       $connection->postMessage("/serverMessage \"default\" \"".$event->reason()."\" ");
       return;
@@ -1205,7 +1205,7 @@ sub _topicCallback{
       
       if($event->wasRejected()){
         if($Debug){
-          warn "Change Topic was rejected, reason: ".$event->reason();
+          warn "PMS-Core> ". "Change Topic was rejected, reason: ".$event->reason();
         }
         $connection->postMessage(Pms::Prot::Messages::serverMessage("default",$event->reason()));
         return;

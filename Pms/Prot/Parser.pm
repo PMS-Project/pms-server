@@ -61,10 +61,10 @@ sub new{
     (start code)
     my %command = $parser->parseMessage($buffer);
     if($command != undef){
-        print "CommandName: ".$$command{command};
+        warn "CommandName: ".$$command{command};
     }else{
       if($parser->{m_lastError}){
-        print "Error while parsing ";
+        warn "Error while parsing ";
       }
     }
     (end)
@@ -111,11 +111,11 @@ sub parseMessage {
       last;
     }
     
-    #print "remaining message: '".$message."'\n";
+    #warn "remaining message: '".$message."'\n";
     
     #don't cut the first element out so the subparser can read it
     my $char = substr($message,length($message)-1,1);
-    #print "Next Char: '".$char."'\n";
+    #warn "Next Char: '".$char."'\n";
     my $arg  = undef;
     if($char eq "\"" || $char eq "'"){
       $arg = $self->_parseQuotedString(\$message);
@@ -135,15 +135,15 @@ sub parseMessage {
   }
   
   if($Debug){
-    warn "Command Parsing Success";
-    print "Args: @arguments";
+    warn "PMS-Core> ". "Command Parsing Success";
+    warn "Args: @arguments";
   }
   
   my %funcCall = ('name' => $name,
                   'args' => \@arguments);
   
   if($Debug){
-    print "\nParsed:\n ".%funcCall;
+    warn "\nParsed:\n ".%funcCall;
   }
   
   return %funcCall;
@@ -185,12 +185,12 @@ sub _parseToken {
   my $token;
   my $firstChar = 1;
   
-  #print "Parse Token \n";
+  #warn "Parse Token \n";
   
   while(length($$message)){
     my $char = chop($$message);
     if($char eq " "){ #space seperates arguments
-      #print "parsed token: ".$token."\n";
+      #warn "parsed token: ".$token."\n";
       return $token;
     }
     if($firstChar){
@@ -305,7 +305,7 @@ sub _parseString {
     }else{
       #we hit the end of the string return to parent
       if($char eq $quotes){
-        #print "parsed string: ".$string."\n";
+        #warn "parsed string: ".$string."\n";
         return $string;
       }
     }
@@ -371,16 +371,16 @@ sub _parseNumber {
     }
     $number .= $char;
   }
-  #print "parsed number ".$number."\n";
+  #warn "parsed number ".$number."\n";
   return $number;
 }
 
 1;
 #package Test;
 
-#print "Trying to parse: ".$ARGV[0];
+#warn "Trying to parse: ".$ARGV[0];
 #my $parser = Pms::Prot::Parser->new();
 #$parser->parseMessage($ARGV[0]);
 #if($parser->{m_lastError}){
-#  print "\nDang ".$parser->{m_lastError}."\n";
+#  warn "\nDang ".$parser->{m_lastError}."\n";
 #}

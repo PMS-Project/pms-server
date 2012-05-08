@@ -76,7 +76,7 @@ sub _onHandshakeFinished{
   my $self = shift or die "Need Ref";
   return sub{
     if($Debug){
-      warn "Handshake is done";
+      warn "PMS-Core> ". "Handshake is done";
     }
     
     #start the automatic reading
@@ -104,7 +104,7 @@ sub _onErrorCallback{
   my $self = shift or die "Need Ref";
   
   return sub{
-    warn "Websocket Error Closing Connection: $_[2]";
+    warn "PMS-Core> ". "Websocket Error Closing Connection: $_[2]";
     $self->emitSignal('error');
     
     $self->emitSignal('disconnect');
@@ -123,7 +123,7 @@ sub _onEofCallback{
   my $self = shift or die "Need Ref";
   return sub {
     $_[0]->destroy; # destroy handle
-    warn "Other Side disconnected.";
+    warn "PMS-Core> ". "Other Side disconnected.";
     $self->emitSignal('disconnect');
   }
 }
@@ -145,7 +145,7 @@ sub _readyRead{
   my $self = shift or die "Need Ref";
   
   my ($hdl, $line) = @_;
-  warn "JUST RECEIVED Data: ".$line;
+  warn "PMS-Core> ". "IN>>>: ".$line;
   push(@{ $self->{m_buffer} },$line);
   
   $self->emitSignal('dataAvailable');

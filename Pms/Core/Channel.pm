@@ -5,6 +5,7 @@
   Package: Pms::Core::Channel
   
   Description:
+  Represents a Channel in the Server
   
 =cut
 
@@ -17,9 +18,6 @@ use Pms::Prot::Messages;
 =begin nd
   Constructor: new
     Initializes the Object
-    
-  Parameters:
-    xxxx - description
 =cut
 sub new {
   my $class = shift;
@@ -37,16 +35,13 @@ sub new {
 
 =begin nd
   Function: channelName
-    <function_description>
+    Returns the channel name
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    string - the channel name
 =cut
 sub channelName {
   my $self = shift or die "Need Ref";
@@ -55,16 +50,18 @@ sub channelName {
 
 =begin nd
   Function: _connectionForIdent
-    <function_description>
+    Searches for a connection identifier, and returns
+    the connection if it can find one
   
   Access:
     Private
     
   Parameters:
-    xxxx - description
+    $ident - the Connection identifier
     
   Returns:
-    xxxx
+    <Pms::Core::Connection> - The Connection Object or
+    undef - if nothing was found
 =cut
 sub _connectionForIdent{
   my $self = shift or die "Need Ref";
@@ -75,16 +72,15 @@ sub _connectionForIdent{
 
 =begin nd
   Function: sendMessage
-    <function_description>
+    sends a Message to all users in the channel
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $who - The user 
+    $when - The time of the message
+    $message - The message itself
 =cut
 sub sendMessage{
   my $self = shift or die "Need Ref";
@@ -104,16 +100,17 @@ sub sendMessage{
 
 =begin nd
   Function: hasConnection
-    <function_description>
+    Checks if a given connection id is in the channel
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
+    $connId - The connectionId we are looking for
     
   Returns:
-    xxxx
+    1 - for true
+    0 - for false
 =cut
 sub hasConnection{
   my $self = shift or die "Need Ref";  
@@ -124,16 +121,13 @@ sub hasConnection{
 
 =begin nd
   Function: sendChannelMessage
-    <function_description>
+    Sends any Message to all users in the channel
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $message - the message to be sent (already in protocol format)
 =cut
 sub sendChannelMessage{
   my $self = shift or die "Need Ref";  
@@ -150,16 +144,13 @@ sub sendChannelMessage{
 
 =begin nd
   Function: addConnection
-    <function_description>
+    Adds a <Pms::Core::Connection> object to the channel
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $connection the <Pms::Core::Connection> object to be added
 =cut
 sub addConnection {
   my $self = shift;
@@ -183,16 +174,13 @@ sub addConnection {
 
 =begin nd
   Function: _disconnectCallback
-    <function_description>
+  Creates the callback that is executed, when a client disconnects from the server
   
   Access:
     Private
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    callback - the callback function
 =cut
 sub _disconnectCallback{
   my $self = shift;
@@ -204,16 +192,13 @@ sub _disconnectCallback{
 
 =begin nd
   Function: removeConnection
-    <function_description>
+    Removes a connection the channel
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $connection - The <Pms::Core::Connection> object to be removed
 =cut
 sub removeConnection {
   my $self = shift;
@@ -237,16 +222,13 @@ sub removeConnection {
 
 =begin nd
   Function: userList
-    <function_description>
+    Creates a userlist of all Users in the channel
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    array - all usernames in the channel
 =cut
 sub userList {
   my $self = shift or die "Need Ref";
@@ -263,16 +245,13 @@ sub userList {
 
 =begin nd
   Function: setTopic
-    <function_description>
+    Changes the topic of the channel and sends a topic-change event to the clients
   
   Access:
     Public
     
   Parameters:
-    xxxx - description
-    
-  Returns:
-    xxxx
+    $topic - the new topic
 =cut
 sub setTopic{
   my $self = shift or die "Need Ref";
@@ -284,16 +263,13 @@ sub setTopic{
 
 =begin nd
   Function: topic
-    <function_description>
+    Reads the current channel topic
   
   Access:
     Public
     
-  Parameters:
-    xxxx - description
-    
   Returns:
-    xxxx
+    string - the current channel topic
 =cut
 sub topic {
   return $_[0]->{m_topic};

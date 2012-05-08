@@ -84,7 +84,7 @@ sub new{
                                    mysql_enable_utf8 => 1
   );
   
-  warn "Security Module created";
+  warn "PMS-Core> ". "Security Module created";
   return $self;
 }
 
@@ -148,7 +148,7 @@ sub _loadSettingsFromDbCallback(){
       
       if(@{$rows} > 0){
         foreach my $curr (@{$rows}){
-            warn "Creating Persistent Channel: ".$curr->[1];
+            warn "PMS-Core> ". "Creating Persistent Channel: ".$curr->[1];
             
             if($self->{m_parent}->createChannel(undef,$curr->[1],1)){
               $self->{m_persistentChannels}->{$curr->[1]} = {
@@ -171,7 +171,7 @@ sub _loadSettingsFromDbCallback(){
 =cut
 sub shutdown{
   my $self = shift;
-  warn "Shutting Down";
+  warn "PMS-Core> ". "Shutting Down";
   $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 
@@ -223,11 +223,11 @@ sub _onDbConnectCallback{
     my $success = shift;
     
     if(!$success){
-      warn "Could not connect to database, no Security functions will be registered";
+      warn "PMS-Core> ". "Could not connect to database, no Security functions will be registered";
       return;
     }
     
-    warn "Database connection success, creating Security Hooks";
+    warn "PMS-Core> ". "Database connection success, creating Security Hooks";
     $self->initialize();
   };
 }
@@ -246,7 +246,7 @@ sub _onDbConnectCallback{
 sub _dbErrorCallback{
   my $self = shift;
   return sub{
-    warn "DBI Error: $@ at $_[1]:$_[2]";
+    warn "PMS-Core> ". "DBI Error: $@ at $_[1]:$_[2]";
   };
 }
 
@@ -268,9 +268,9 @@ sub _clientConnectedCallback{
     my $eventType  = shift;
     
     my $connection = $eventType->connection();
-    warn "Applying default Ruleset";
+    warn "PMS-Core> ". "Applying default Ruleset";
     $self->userInfo($connection->identifier());
-    warn Dumper($self->{m_users}->{$connection->identifier()});
+    warn "PMS-Core> ". Dumper($self->{m_users}->{$connection->identifier()});
   };
 }
 
@@ -296,7 +296,7 @@ sub _joinChannelRequestCallback{
     my $connIdent   = $conn->identifier();
     my $channelInfo = $self->{m_persistentChannels}->{$eventType->channel()->channelName()};
     
-    warn "Join Channel Request";
+    warn "PMS-Core> ". "Join Channel Request";
     
     if(!defined $channelInfo){
       #this is a non persistent channel everyone can join it
@@ -459,16 +459,16 @@ sub _identifyCallback{
         my $userId  = -1;
         my $userinfo = $self->userInfo($connection->identifier());
         my %globaleRoles = ();
-        warn Dumper($rows);
+        warn "PMS-Core> ". Dumper($rows);
         foreach my $curr ( @{$rows} ){          
-          warn "Found Role: ".$curr->[1];
+          warn "PMS-Core> ". "Found Role: ".$curr->[1];
           $globaleRoles{$curr->[1]} = 1;
           $userId = $curr->[0];
         }
         $userinfo->setId($userId);
         $userinfo->setGlobalRoleset(\%globaleRoles);
         
-        warn Dumper($self->{m_users}->{$connection->identifier()});
+        warn "PMS-Core> ". Dumper($self->{m_users}->{$connection->identifier()});
         $self->{m_parent}->changeNick($connection, $nickname,1); #change nick and force the change
       }else{
         $connection->postMessage(Pms::Prot::Messages::serverMessage("default","Wrong Username or Password, please try again."));
@@ -497,7 +497,7 @@ sub _disconnectCallback{
     my $conn = $eventType->connection();
     
     if(defined $self->{m_users}->{$conn->identifier()}){
-      warn "User disconnected, removing rights";
+      warn "PMS-Core> ". "User disconnected, removing rights";
       delete $self->{m_users}->{$conn->identifier()};
     }
   };
@@ -689,13 +689,13 @@ sub _giveChannelOpCallback{
       return;
     }
     
-    warn "About to Set Roles";
+    warn "PMS-Core> ". "About to Set Roles";
     my $otherUserInfo   = $self->userInfo($otherConnection->identifier());
-    warn Dumper($otherUserInfo);
+    warn "PMS-Core> ". Dumper($otherUserInfo);
     
     my %ruleset = %{$otherUserInfo->channelRoleset($channel)};
     $ruleset{role_channelAdmin} = 1;
-    warn Dumper(%ruleset);
+    warn "PMS-Core> ". Dumper(%ruleset);
     $otherUserInfo->setChannelRoleset($channel,\%ruleset);
   }
 }
@@ -743,16 +743,16 @@ sub _takeChannelOpCallback{
       return;
     }
     
-    warn "About to Revoke Admin Role";
+    warn "PMS-Core> ". "About to Revoke Admin Role";
     my $otherUserInfo   = $self->userInfo($otherConnection->identifier());
     
     my %ruleset = %{$otherUserInfo->channelRoleset($channel)};
     delete $ruleset{role_channelAdmin};
     if(!keys(%ruleset)){
-      warn "Filling Empty Ruleset";
+      warn "PMS-Core> ". "Filling Empty Ruleset";
       %ruleset = %defaultChannelRuleset;
     }
-    warn Dumper(%ruleset);
+    warn "PMS-Core> ". Dumper(%ruleset);
     $otherUserInfo->setChannelRoleset($channel,\%ruleset);
   }
 }

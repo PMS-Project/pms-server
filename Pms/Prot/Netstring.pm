@@ -109,7 +109,7 @@ sub serialize {
   
   my $netstring = length($value).":".$value.","; 
   if($Debug){
-    warn "Sending netstring: ".$netstring;
+    warn "PMS-Core> ". "Sending netstring: ".$netstring;
   }
   return $netstring;
 }

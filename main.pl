@@ -19,9 +19,8 @@ use PmsConfig;
   Description:
     Initializes and starts the server application
 =cut
-sub main (){
+sub main{
   my $app = Pms::Application->new(\%PmsConfig::Server);    
   $app->execute();
 }
-
 main();

@@ -40,7 +40,7 @@ sub new{
     die "Need a line to print";
   }
   
-  warn "Motd Module created";
+  warn "PMS-Core> ". "Motd Module created";
   return $self;
 }
 
@@ -85,7 +85,7 @@ sub initialize{
 =cut
 sub shutdown (){
   my $self = shift;
-  warn "Shutting Down";
+  warn "PMS-Core> ". "Shutting Down";
   $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 

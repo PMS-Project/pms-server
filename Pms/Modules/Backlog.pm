@@ -52,7 +52,7 @@ sub new{
                                    mysql_auto_reconnect => 1,
                                    mysql_enable_utf8 => 1
   );
-  warn "Backlog Module created";
+  warn "PMS-Core> ". "Backlog Module created";
   return $self;
 }
 
@@ -79,11 +79,11 @@ sub _onDbConnectCallback{
     my $success = shift;
     
     if(!$success){
-      warn "Could not connect to database, no Backlog functions will be registered";
+      warn "PMS-Core> ". "Could not connect to database, no Backlog functions will be registered";
       return;
     }
     
-    warn "Database connection success, creating Backlog Hooks";
+    warn "PMS-Core> ". "Database connection success, creating Backlog Hooks";
     $self->initialize();
   };
 }
@@ -102,7 +102,7 @@ sub _onDbConnectCallback{
 sub _dbErrorCallback{
   my $self = shift;
   return sub{
-    warn "DBI Error: $@ at $_[1]:$_[2]";
+    warn "PMS-Core> ". "DBI Error: $@ at $_[1]:$_[2]";
   };
 }
 
@@ -125,7 +125,7 @@ sub initialize{
     return;
   });
   
-  warn "Registering Events";  
+  warn "PMS-Core> ". "Registering Events";
   $self->{m_eventGuard} = $self->{m_parent}->connect(
     message_send_success  => $self->_messageSendSuccessCallback(),
     join_channel_success  => $self->_joinChannelSuccessCallback(),
@@ -143,7 +143,7 @@ sub initialize{
 =cut
 sub shutdown{
   my $self = shift;
-  warn "Shutting Down";
+  warn "PMS-Core> ". "Shutting Down";
   $self->{m_parent}->disconnect($self->{m_eventGuard});
 }
 
