@@ -121,18 +121,22 @@ AnyEvent::Handle::register_read_type websock_pms => sub{
     }
     
     #warn "Frames found";
-    
-    my $value = Pms::Prot::Netstring::parse($hdl,\$hdl->{pmsReadBuf});
-    if(defined $value){
-      #warn "Callback";
-      $cb->($hdl,$value);
-      return 1; #tell the AnyEvent::Handle code that we finally have read data
-    }else{
-      if(defined $Pms::Prot::Netstring::lastError){
-         warn "Error in Websocket Read ".$Pms::Prot::Netstring::lastError;
-         $_[0]->_error (Errno::EBADMSG);
+    my $read = 0;
+    while(1){
+      my $value = Pms::Prot::Netstring::parse($hdl,\$hdl->{pmsReadBuf});
+      if(defined $value){
+        #warn "Callback";
+        $cb->($hdl,$value);
+        $read = 1; #tell the AnyEvent::Handle code that we finally have read data
+      }else{
+        if(defined $Pms::Prot::Netstring::lastError){
+          warn "Error in Websocket Read ".$Pms::Prot::Netstring::lastError;
+          $_[0]->_error (Errno::EBADMSG);
+        }
+        last;
       }
     }
+    return $read;
   }
 };
 

@@ -145,7 +145,7 @@ sub _readyRead{
   my $self = shift or die "Need Ref";
   
   my ($hdl, $line) = @_;
-  warn "Data: ".$line;
+  warn "JUST RECEIVED Data: ".$line;
   push(@{ $self->{m_buffer} },$line);
   
   $self->emitSignal('dataAvailable');
