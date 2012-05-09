@@ -161,7 +161,7 @@ sub _readyRead{
 sub postMessage{
   my $self = shift or die "Need Ref";
   my $message = shift;
-  
+  warn "PMS-Core> ". "<<<OUT: ".$message;
   $self->{m_handle}->push_write(websock_pms => $message);
 }
 
@@ -174,7 +174,7 @@ sub postMessage{
 sub sendMessage{
   my $self = shift or die "Need Ref";
   my $message = shift;
-  
+  warn "PMS-Core> ". "<<<OUT: ".$message;
   my $frame  = Protocol::WebSocket::Frame->new(Pms::Prot::WebSocket::Protocol::_netstringify( $message ));
   syswrite($self->{m_handle}->fh,$frame);
 }

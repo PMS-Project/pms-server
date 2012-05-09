@@ -158,7 +158,7 @@ sub hasChannelRole {
     return 0;
   }
   
-  if(defined $self->{m_channelRoles}->{$channel}->{role_admin}        ||
+  if(defined $self->{m_globalRoles}->{role_admin}        ||
      defined $self->{m_channelRoles}->{$channel}->{role_channelAdmin} ||
      defined $self->{m_channelRoles}->{$channel}->{$role} ){
       return 1;
